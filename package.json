@@ -5,10 +5,35 @@
     "mongoose": "^9.1.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.3.3",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
-  }
+    "start": "node dist/app.js",
+     "dev": "node --loader ts-node/esm --no-warnings src/app.ts",
+      "build": "tsc"
+  },
+  "name": "impextech",
+  "version": "1.0.0",
+  "description": "**IMPEXTECH** is a custom built e-commerce platform designed to manage the retail operations of a high-spec gadget brand. This project serves as both a functional business tool and a demonstration of back end engineering principles using the Node.js ecosystem.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dillibs001/impextech.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type":"module",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dillibs001/impextech/issues"
+  },
+  "homepage": "https://github.com/dillibs001/impextech#readme"
 }
+

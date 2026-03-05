@@ -1,8 +1,7 @@
-require('dotenv').config();//load variables from .env file 
-const express = require('express');
-const mongoose = require('mongoose');
-
-
+import 'dotenv/config';//import dotenv to load environment variables from the .env file
+import express from 'express';//import express to create the server and handle routes
+import {connectDb} from './db.js';//import the connectDb function to connect to the database
+import mongoose from 'mongoose';//import mongoose to interact with the MongoDB database
 
 
 
@@ -34,12 +33,18 @@ app.post ('/products', async(req, res) =>{
 
         const savedProduct = await newProduct.save();//this is to save the new product to the database
 
-        res.status(201).json({message:"Product added successfully to impextech database", success:true, data: savedProduct});//this is to send a response back to the client with the saved product data
+       return res.status(201).json({message:"Product added successfully to impextech database", success:true, data: savedProduct});//this is to send a response back to the client with the saved product data
 
-    }catch (err){
-        res.status(400).json({message:"Error adding product to impextech database", success: false, error: err.message});//this is to send a response back to the client with the error message if there is an error while saving the product to the database   
+    }catch (err)
+    {
+        if(err instanceof Error){
+            return res.status(400).json({message:"Error adding product to impextech database", success: false, error: err.message});//this is to send a response back to the client with the error message if there is an error while saving the product to the database   
+        }
+        else{ return res.status(400).json({message:"An unknown error occurred while adding product to impextech database", success: false, error: "Unknown error"});//this is to send a response back to the client with a generic error message if the error is not an instance of Error}
+    }
 
     }
+
     });
 
 
@@ -48,17 +53,8 @@ app.listen (port , () => {
     console.log(`Server is running on http://locahhost:${port}`);
 }) //this is to start the server.
 
-//connect to mongodb database 
-const connectDb = async()=>{
-    try{
-        await mongoose.connect(process.env.MONGODB_URI);//this is to connect to the mongodb database using the connection string from the .env file
-        console.log ("Impextech database connected successfully");
-    } catch (err){
-        console.error("Error connecting to the database", err);//this is to log any error that occurs during the connection
-        process.exit(1); //this is to exit the process with failure
-    }
-    }
 connectDb();//this is to call the connectDb function to connect to the database
+
 
 
 
