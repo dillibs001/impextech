@@ -12,6 +12,8 @@ const paymentSchema = new mongoose.Schema(
 
 type IPayment = InferSchemaType<typeof paymentSchema>;// This will create a TypeScript type based on the paymentSchema, allowing for type safety when working with Payment documents in your code.
 
-const Payment = model<IPayment>("Payment", paymentSchema);// This creates a Mongoose model named "Payment" using the paymentSchema. The model provides an interface for interacting with the "payments" collection in the MongoDB database, allowing you to create, read, update, and delete payment documents.
+// const Payment = model<IPayment>("Payment", paymentSchema);// This creates a Mongoose model named "Payment" using the paymentSchema. The model provides an interface for interacting with the "payments" collection in the MongoDB database, allowing you to create, read, update, and delete payment documents.
+
+const Payment = model<IPayment>("Payment", paymentSchema);// This creates a Mongoose model named "Payment" using the paymentSchema. The model provides an interface for interacting with the "payments" collection in the MongoDB database, allowing you to create, read, update, and delete payment documents. 
 
 export default Payment;// This exports the Payment model so that it can be imported and used in other parts of the application, such as in controllers or services that handle payment-related logic.

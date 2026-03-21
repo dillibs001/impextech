@@ -7,17 +7,22 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.3.3",
+    "jest": "^30.3.0",
+    "mongodb-memory-server": "^11.0.1",
     "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   },
   "scripts": {
     "start": "node dist/app.js",
-     "dev": "node --loader ts-node/esm --no-warnings src/app.ts",
-      "build": "tsc"
+    "dev": "node --loader ts-node/esm --no-warnings src/app.ts",
+    "build": "tsc",
+     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.ts"
   },
   "name": "impextech",
   "version": "1.0.0",
@@ -29,11 +34,10 @@
   },
   "keywords": [],
   "author": "",
-  "type":"module",
+  "type": "module",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/dillibs001/impextech/issues"
   },
   "homepage": "https://github.com/dillibs001/impextech#readme"
 }
-
