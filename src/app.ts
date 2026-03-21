@@ -6,7 +6,7 @@ import mongoose from 'mongoose';//import mongoose to interact with the MongoDB d
 
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.use (express.json());//this is to parse json data 
 
 const gadgets = [

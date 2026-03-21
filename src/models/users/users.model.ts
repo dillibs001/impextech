@@ -1,7 +1,7 @@
 import mongoose, {type InferSchemaType,model} from 'mongoose';//import mongoose to interact with the MongoDB database
 
 const userSchema = new mongoose.Schema({
-    first_name :{type:String,required:[true, 'First name is required'],trime:true},
+    first_name :{type:String,required:[true, 'First name is required'],trim:true},
     last_name:{type:String, required:[true, 'Last name is required'],trim:true},
     email:{type:String, required:[true,'Email is required'], unique:true, lowercase:true, trim:true},
     password:{type:String, required:[true,'Password is required'], trim:true, minlength:[6, 'Password must be at least 6 characters long']},

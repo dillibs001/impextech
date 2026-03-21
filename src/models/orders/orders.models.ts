@@ -17,8 +17,8 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-type IOrder = InferSchemaType<typeof orderSchema>;
+type IOrder = InferSchemaType<typeof orderSchema>; // This will infer the TypeScript type from the Mongoose schema
 
-const Order = model<IOrder>("Order", orderSchema);
+const Order = model<IOrder>("Order", orderSchema);// This creates a Mongoose model named "Order" using the defined schema and the inferred TypeScript type
 
 export default Order;
