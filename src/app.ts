@@ -2,24 +2,18 @@ import 'dotenv/config';//import dotenv to load environment variables from the .e
 import express from 'express';//import express to create the server and handle routes
 import {connectDb} from './db.js';//import the connectDb function to connect to the database
 import mongoose from 'mongoose';//import mongoose to interact with the MongoDB database
-
+import swaggerUi from 'swagger-ui-express';
+import { specs } from './config/swagger.js';
+import authRoutes from './routes/auth.routes.js';//import the auth routes to handle authentication-related endpoints    
 
 
 const app = express();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));//this is to set up the Swagger UI for API documentation at the /api-docs endpoint
 const port = process.env.PORT || 3000;
 app.use (express.json());//this is to parse json data 
 
-const gadgets = [
-    {id:1, name : "iPhone 16 Pro Max", price : "N 1,800,000", condition : "New"},
-    {id:2, name : "Macbook Air M2", price : "N 1,200,000", condition : "Used"},
-    {id:3 , name: "Samsung Galaxy S23 Ultra", price : "N 1,500,000", condition : "New" }
-] //this is a sample data of products
 
-app.get('/products', (req, res) =>{
-    res.json(gadgets);
-})//this is to get all products
-
-
+app.use('/api/auth', authRoutes);//this is to use the auth routes for any endpoint that starts with /auth
 
 app.post ('/products', async(req, res) =>{
     try{
@@ -47,6 +41,7 @@ app.post ('/products', async(req, res) =>{
 
     });
 
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));//this is to set up the Swagger UI for API documentation at the /api-docs endpoint
 
     
 app.listen (port , () => {

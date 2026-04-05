@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     last_name:{type:String, required:[true, 'Last name is required'],trim:true},
     email:{type:String, required:[true,'Email is required'], unique:true, lowercase:true, trim:true},
     password:{type:String, required:[true,'Password is required'], trim:true, minlength:[6, 'Password must be at least 6 characters long']},
-
+    role:{type:String, enum:['user', 'admin'], default:'user'},
 
 }
 , {timestamps:true});//this is to create a new schema for the user model with the specified fields and validation rules, and to automatically add createdAt and updatedAt timestamps to the documents
