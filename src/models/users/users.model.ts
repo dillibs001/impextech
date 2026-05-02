@@ -3,8 +3,9 @@ import mongoose, {type InferSchemaType,model} from 'mongoose';//import mongoose 
 const userSchema = new mongoose.Schema({
     first_name :{type:String,required:[true, 'First name is required'],trim:true},
     last_name:{type:String, required:[true, 'Last name is required'],trim:true},
-    email:{type:String, required:[true,'Email is required'], unique:true, lowercase:true, trim:true},
-    password:{type:String, required:[true,'Password is required'], trim:true, minlength:[6, 'Password must be at least 6 characters long']},
+    email:{type:String, required:[true,'Email is required'], unique:true, lowercase:true, trim:true,match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']},
+    password:{type:String, required:[true,'Password is required'], trim:true, minlength:[6, 'Password must be at least 6 characters long'], 
+        select:false},//this field is excluded from query results by default
     role:{type:String, enum:['user', 'admin'], default:'user'},
 
 }

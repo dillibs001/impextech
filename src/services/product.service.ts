@@ -22,3 +22,26 @@ export const createProduct = async(productData:IProductData) =>
         return await product.save();
     }
 
+export const getAllProducts = async () => {
+    return await Product.find({});
+};//fetch all products from the database and return them as an array of product objects
+
+export const getProductById = async (id: string) => {
+    return await Product.findById(id);
+
+};
+
+//fetch a single product by its ID from the database and return it as a product object. If the product is not found, it will return null.
+export const updateProduct = async (id: string, productData: Partial<IProductData>) => {
+    const product = await Product.findByIdAndUpdate(
+        id, 
+            productData, 
+             { new: true }); // Update a product by its ID with the provided data and return the updated product  
+                return product;
+};
+
+//delete a product by id 
+export const deleteProduct = async (id: string) => {
+    await Product.findByIdAndDelete(id); // Delete a product by its ID from the database
+    return Product;
+};
