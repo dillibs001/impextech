@@ -23,15 +23,7 @@ export const generateToken = (userId: string, userEmail: string, userRole:string
         JWT_SECRET, 
         { expiresIn: '1h' }
     );
-}; //function to generate JWT token for the user
-
-// export const verifyToken = (token: string): any => {
-//     try {
-//         return jwt.verify(token, JWT_SECRET);
-//     } catch (error) {
-//         throw new Error('Invalid token');
-//     }
-// };//verifying the token for the user
+}; 
 
 
 export const registerUser = async (email: string, password: string,first_name: string, last_name: string): Promise<{ token: string, user: any }> => {
@@ -59,7 +51,7 @@ export const registerUser = async (email: string, password: string,first_name: s
 }
 
 export const loginUser = async (email: string, password: string): Promise<{ token: string, user: any }> => {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password'); // We need to select the password field explicitly since it's excluded by default
     if(!user)
     {
         throw new Error('Invalid email or password');

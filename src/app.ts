@@ -6,18 +6,19 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './config/swagger.js';
 import authRoutes from './routes/auth.routes.js';//import the auth routes to handle authentication-related endpoints    
 import productRoutes from './routes/product.routes.js';//import the product routes to handle product-related endpoints
-
+import userRoutes from './routes/user.routes.js';//import the user routes to handle user-related endpoints
 
 const app = express();
 app.use(productRoutes);//this is to use the product routes for any endpoint that starts with /products
+app.use(userRoutes);//this is to use the user routes for any endpoint that starts with /users
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));//this is to set up the Swagger UI for API documentation at the /api-docs endpoint
 const port = process.env.PORT
 app.use (express.json());//this is to parse json data 
 
 
 app.use('/api/auth', authRoutes);//this is to use the auth routes for any endpoint that starts with /auth
-
-
+app.use('/api/products', productRoutes);//this is to use the product routes for any endpoint that starts with /products
+app.use('/api/users', userRoutes);//this is to use the user routes for any endpoint that starts with /users
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));//this is to set up the Swagger UI for API documentation at the /api-docs endpoint
 
     
