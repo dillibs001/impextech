@@ -2,7 +2,7 @@ import type { Response,NextFunction } from "express";
 import type {Request as JWTRequest} from "express-jwt";
 import {expressjwt as checkJwt} from "express-jwt";
 
-
+// Define the interface for the JWT payload
 interface TokenPayload {
     id: string;
     email: string;

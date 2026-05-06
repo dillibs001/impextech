@@ -10,11 +10,11 @@ import
         type IProductData
     } from "../services/product.service.js";
 
-const errorHandlerforId = (productId: string | undefined, res:Response) => {
-    if (!productId || Array.isArray(productId)) {
-       res.status(400).json({ message: 'Invalid product ID' });
-    }
-};// Helper function to handle errors related to product ID validation
+// const errorHandlerforId = (productId: string | undefined, res:Response) => {
+//     if (!productId || Array.isArray(productId)) {
+//        res.status(400).json({ message: 'Invalid product ID' });
+//     }
+// };// Helper function to handle errors related to product ID validation
 
 export const createProductController = async (req: Request, res: Response) => {
     try {

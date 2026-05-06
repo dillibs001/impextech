@@ -17,7 +17,7 @@ export const getAllUsers = async () =>
 };
 
 
-//update user by profile 
+//update user by profile
 export const updateUser = async (id: string, updateData: Omit<Partial<typeof User>, 'password'>) => {
     const updatedUser = await User.findByIdAndUpdate(
         id, 
@@ -39,4 +39,5 @@ export const deleteUser = async (id: string) => {
         throw new Error('User not found');
     }
     return deletedUser;
+
 };

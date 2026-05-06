@@ -16,13 +16,13 @@ const requireLogin = checkJwt({
 });// Middleware to check if the user is logged in
 
 // Public routes for product retrieval
-router.get("/products", getAllProductsController);
-router.get("/products/:id", getProductByIdController);
+router.get("/", getAllProductsController);
+router.get("/:id", getProductByIdController);
 
 
 // Admin routes for product management
-router.put("/products/:id", requireLogin, isAdmin, updateProductController);
-router.delete("/products/:id", requireLogin, isAdmin, deleteProductController);
-router.post("/products", requireLogin, isAdmin, createProductController);
+router.put("/:id", requireLogin, isAdmin, updateProductController);
+router.delete("/:id", requireLogin, isAdmin, deleteProductController);
+router.post("/", requireLogin, isAdmin, createProductController);
 
 export default router; // Export the router to be used in the main application file
