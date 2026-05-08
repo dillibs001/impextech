@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes.js';//import the auth routes to han
 import productRoutes from './routes/product.routes.js';//import the product routes to handle product-related endpoints
 import userRoutes from './routes/user.routes.js';//import the user routes to handle user-related endpoints
 import cartRoutes from './routes/cart.routes.js';//import the cart routes to handle cart-related endpoints  
+import categoryRoutes from './routes/categories.routes.js';//import the category routes to handle category-related endpoints
 
 const app = express();
 const port = process.env.PORT
@@ -18,8 +19,8 @@ app.use('/api/v1/auth', authRoutes);//this is to use the auth routes for any end
 app.use('/api/v1/products', productRoutes);//this is to use the product routes for any endpoint that starts with /products
 app.use('/api/v1/users', userRoutes);//this is to use the user routes for any endpoint that starts with /users
 app.use('/api/v1/cart', cartRoutes);//this is to use the cart routes for any endpoint that starts with /cart
+app.use('/api/v1/categories', categoryRoutes);//this is to use the category routes for any endpoint that starts with /categories
 app.use('/api/v1-docs', swaggerUi.serve, swaggerUi.setup(specs));//this is to set up the Swagger UI for API documentation at the /api-docs endpoint
-
 
    
 app.listen (port , () => {

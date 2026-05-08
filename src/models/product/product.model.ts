@@ -5,11 +5,12 @@ const productSchema = new mongoose.Schema({
     name:{type:String, required:[true, 'Product name is required'], trim:true},
     description:{type:String, required:[true, 'Product description is required'], trim:true},
     price:{type:Number, required:[true, 'Product price is required'], min:0},
-    category:{type:String, required:[true, 'Product category is required'], trim:true},
+    category:{type:mongoose.Schema.Types.ObjectId, ref:'Category', required:[true, "A product must belong to a category"]},
     stock:{type:Number, required:[true, 'Product stock is required'], min:0},
     image_url:{type:String, required:[true, 'Product image URL is required'], trim:true},
     user_id:{type:mongoose.Schema.Types.ObjectId, ref:'User', required:true},
     inStock:{type:Boolean, default:true},
+
 
 }, {timestamps:true});//this is to create a new schema for the product model with the specified fields and validation rules, and to automatically add createdAt and updatedAt timestamps to the documents
 
