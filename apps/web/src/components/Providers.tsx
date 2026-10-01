@@ -1,11 +1,13 @@
 'use client';
 
-import { ApolloClient, InMemoryCache } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core';
 import { ApolloProvider } from '@apollo/client/react';
 import { ReactNode } from 'react';
 
 const client = new ApolloClient({
-  uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api',
+  link: new HttpLink({
+    uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api',
+  }),
   cache: new InMemoryCache(),
 });
 
