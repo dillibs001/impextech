@@ -60,41 +60,85 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Hero Right Visual: Brand Creative Card */}
+          {/* Hero Right Visual: Featured Verified Device Card */}
           <div className="w-full lg:w-[460px] flex-shrink-0">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-rose-600 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition duration-500"></div>
-              <div className="relative bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                {/* Brand Banner Preview */}
-                <div className="relative aspect-square overflow-hidden bg-slate-950">
-                  <img 
-                    src="/brand/instagram-post.png" 
-                    alt="impextech official community announcement" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-                  
-                  {/* Floating Pill Badges */}
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2">
-                    <a 
-                      href="https://www.instagram.com/impextech/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md text-slate-900 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md hover:bg-white transition-colors"
-                    >
-                      <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
-                      @impextech
-                    </a>
-                    <a 
-                      href="https://wa.me/2349060329221"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md hover:bg-[#20ba59] transition-colors"
-                    >
-                      <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
-                      +234 906 032 9221
-                    </a>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-rose-600 rounded-3xl blur-lg opacity-30 group-hover:opacity-60 transition duration-500"></div>
+              <div className="relative bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-5">
+                {/* Card Top: Brand Emblem + Canada Badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src="/brand/logo.png" 
+                      alt="impextech emblem" 
+                      className="w-7 h-7 object-contain rounded-md" 
+                    />
+                    <span className="text-xs font-bold text-slate-300 tracking-wider uppercase">Verified Canada Drop</span>
                   </div>
+                  <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-red-500/30">
+                    <ShieldCheck className="w-3 h-3" /> 100% Tested
+                  </span>
+                </div>
+
+                {/* Device Image Showcase */}
+                <div className="relative aspect-[4/3] rounded-2xl bg-gradient-to-b from-slate-800/80 to-slate-950 flex items-center justify-center p-4 overflow-hidden border border-slate-800/60">
+                  <img 
+                    src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=700&q=80" 
+                    alt="iPhone 14 Pro Max Canada Verified" 
+                    className="object-contain h-full max-h-[220px] drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" 
+                  />
+                  <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-full text-[11px] text-slate-300 font-medium border border-slate-800 flex items-center gap-1.5">
+                    <BatteryCharging className="w-3.5 h-3.5 text-red-400" />
+                    <span>Battery Health: <strong className="text-white">96%</strong></span>
+                  </div>
+                </div>
+
+                {/* Device Info & Specs */}
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-bold text-lg text-white">iPhone 14 Pro Max</h3>
+                      <p className="text-xs text-slate-400">Deep Purple • 256GB • Factory Unlocked</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-slate-400 line-through block">₦980,000</span>
+                      <span className="text-lg font-black text-red-500">₦920,000</span>
+                    </div>
+                  </div>
+
+                  {/* Spec pills */}
+                  <div className="grid grid-cols-3 gap-2 mt-4 text-[11px] text-center">
+                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl py-1.5 px-2">
+                      <span className="block text-slate-400 text-[10px]">IMEI Status</span>
+                      <strong className="text-white">Clean / Global</strong>
+                    </div>
+                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl py-1.5 px-2">
+                      <span className="block text-slate-400 text-[10px]">Physical Body</span>
+                      <strong className="text-white">Grade A+ (9.8/10)</strong>
+                    </div>
+                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl py-1.5 px-2">
+                      <span className="block text-slate-400 text-[10px]">Warranty</span>
+                      <strong className="text-white">7-Day Return</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                  <Link 
+                    href="/products" 
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 rounded-xl text-center transition-colors border border-slate-700"
+                  >
+                    View Gadgets
+                  </Link>
+                  <a 
+                    href="https://wa.me/2349060329221?text=Hello%20impextech,%20I'm%20interested%20in%20the%20Canada-imported%20iPhone%2014%20Pro%20Max%20256GB."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors shadow-sm"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5 fill-current" /> Order Fast
+                  </a>
                 </div>
               </div>
             </div>
