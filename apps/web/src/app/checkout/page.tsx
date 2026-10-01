@@ -2,7 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { useCart } from '@/context/CartContext';
+import {
+  syncCartToVendure,
+  setCustomerForOrder,
+  setOrderShippingAddress,
+  setOrderShippingMethod,
+  transitionOrderToArrangingPayment,
+  addPaymentToOrder,
+} from '@/lib/cart';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import {
   ShieldCheck,
@@ -38,6 +47,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<DeliveryForm>(initialForm);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof DeliveryForm, string>>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const formatPrice = (val: number) =>
     new Intl.NumberFormat('en-NG', {
@@ -104,18 +114,68 @@ export default function CheckoutPage() {
     clearCart();
   };
 
-  const handlePaystackOrder = () => {
+  const handlePaystackOrder = async () => {
     if (!validate()) return;
-    // Paystack integration placeholder — in production this would:
-    // 1. Create a Vendure order via addItemToOrder mutations
-    // 2. Set customer details via setCustomerForOrder
-    // 3. Initialize Paystack inline popup with the order total
-    // 4. On success, call addPaymentToOrder with the Paystack reference
-    // For now, show a confirmation and submit via WhatsApp as fallback
-    alert(
-      `Paystack integration coming soon!\n\nFor now, your order of ${formatPrice(grandTotal)} will be processed via WhatsApp.`
-    );
-    handleWhatsAppOrder();
+    
+    setIsProcessing(true);
+    
+    try {
+      const orderRes = await syncCartToVendure(
+        items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity }))
+      );
+      
+      if (!orderRes) throw new Error('Failed to create order');
+
+      const customerRes = await setCustomerForOrder({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        emailAddress: form.email,
+        phoneNumber: form.phone,
+      });
+      if (!customerRes) throw new Error('Failed to set customer details');
+
+      const addressRes = await setOrderShippingAddress({
+        fullName: `${form.firstName} ${form.lastName}`,
+        streetLine1: form.address,
+        city: form.cityState,
+        province: form.cityState,
+        countryCode: 'NG',
+      });
+      if (!addressRes) throw new Error('Failed to set shipping address');
+
+      const shippingRes = await setOrderShippingMethod();
+      if (!shippingRes) throw new Error('Failed to set shipping method');
+
+      const transitionRes = await transitionOrderToArrangingPayment();
+      if (!transitionRes) throw new Error('Failed to arrange payment');
+
+      const paystack = new window.PaystackPop.setup({
+        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_your_key_here',
+        email: form.email,
+        amount: grandTotal * 100, // Convert to kobo
+        currency: 'NGN',
+        ref: `IMPEX-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+        callback: async (response: { reference: string }) => {
+          const result = await addPaymentToOrder(response.reference);
+          if (result) {
+            clearCart();
+            setOrderPlaced(true);
+          } else {
+            alert('Payment failed. Please try again or contact support.');
+          }
+          setIsProcessing(false);
+        },
+        onClose: () => {
+          setIsProcessing(false);
+        },
+      });
+
+      paystack.openIframe();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'An error occurred during checkout. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   // Order confirmation screen
@@ -186,7 +246,18 @@ export default function CheckoutPage() {
     }`;
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
+    <>
+      <Script src="https://js.paystack.co/v2/inline.js" strategy="lazyOnload" />
+      {isProcessing && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 max-w-sm w-full mx-4">
+            <div className="w-10 h-10 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin" />
+            <p className="text-slate-900 font-bold text-center">Processing your order...</p>
+            <p className="text-slate-500 text-xs text-center">Please do not close this window</p>
+          </div>
+        </div>
+      )}
+      <div className="bg-slate-50 min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/products" className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -427,5 +498,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
