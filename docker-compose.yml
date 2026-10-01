@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # The PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: impex-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: impextech
+      POSTGRES_PASSWORD: ImpexTechSecurePassword123!
+      POSTGRES_DB: vendure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # The Monorepo (Next.js Frontend + Vendure Backend)
+  impex-platform:
+    image: node:24-alpine
+    container_name: impex-apps
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    # Automatically enables pnpm, installs dependencies, builds, and starts both apps
+    command: sh -c "corepack enable pnpm && pnpm install && pnpm run build && pnpm run start"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://impextech:ImpexTechSecurePassword123!@postgres:5432/vendure
+      - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/shop-api
+    ports:
+      - "3000:3000" # Next.js Storefront
+      - "3001:3001" # Vendure Shop & Admin API
+      - "3002:3002" # Vendure Admin UI
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
