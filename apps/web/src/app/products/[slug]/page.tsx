@@ -1,5 +1,6 @@
 import { queryVendure, GET_PRODUCT_BY_SLUG_QUERY } from '@/lib/vendure';
 import { ShieldCheck, BatteryCharging, ShieldAlert, ShoppingCart, Info } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { notFound } from 'next/navigation';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -83,9 +84,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
                     <div className="prose text-slate-600 mb-8 max-w-none" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
 
-                    <button className="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
-                        <ShoppingCart size={20} /> Add to Cart
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
+                            <ShoppingCart size={20} /> Add to Cart
+                        </button>
+                        
+                        <a 
+                            href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I'm interested in buying ${product.name} (${primaryVariant ? formatPrice(primaryVariant.priceWithTax) : ''}). Is this unit still available?`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+                        >
+                            <WhatsAppIcon className="w-5 h-5 fill-current" /> Order via WhatsApp
+                        </a>
+                    </div>
                     
                     <p className="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-1">
                         <ShieldAlert size={14} /> Backed by our 7-Day Money-Back Guarantee.
