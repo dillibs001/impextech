@@ -3,6 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/Providers';
 import Link from 'next/link';
 import { ShoppingCart, Menu } from 'lucide-react';
+import { InstagramIcon } from '@/components/icons/InstagramIcon';
 import { AiConsultant } from '@/components/chat/AiConsultant';
 
 export const metadata: Metadata = {
@@ -37,6 +38,15 @@ export default function RootLayout({
 
               {/* Actions */}
               <div className="flex items-center gap-4">
+                <a 
+                  href="https://www.instagram.com/impextech/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-600 transition-colors bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-full"
+                >
+                  <InstagramIcon className="w-4 h-4 text-pink-600" />
+                  <span>@impextech</span>
+                </a>
                 <button className="p-2 hover:bg-slate-100 rounded-full transition-colors relative">
                   <ShoppingCart className="w-5 h-5" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full"></span>
@@ -60,9 +70,18 @@ export default function RootLayout({
                 <Link href="/" className="text-2xl font-bold text-white tracking-tight mb-4 inline-block">
                   impextech
                 </Link>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-400 mb-4">
                   Canada-sourced, verified, and guaranteed used gadgets. Quality you can trust, right here in Nigeria.
                 </p>
+                <a 
+                  href="https://www.instagram.com/impextech/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 text-sm text-pink-400 hover:text-pink-300 transition-colors font-medium"
+                >
+                  <InstagramIcon className="w-5 h-5" />
+                  <span>Follow @impextech</span>
+                </a>
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-4">Quick Links</h3>
@@ -81,11 +100,21 @@ export default function RootLayout({
                 </ul>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-4">Contact</h3>
+                <h3 className="text-white font-semibold mb-4">Contact & Social</h3>
                 <ul className="space-y-2 text-sm text-slate-400">
                   <li>Lagos, Nigeria</li>
                   <li>hello@impextech.com</li>
                   <li>+234 123 456 7890</li>
+                  <li className="pt-2">
+                    <a 
+                      href="https://www.instagram.com/impextech/" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-emerald-400 hover:underline flex items-center gap-1.5"
+                    >
+                      <InstagramIcon className="w-4 h-4" /> instagram.com/impextech
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>

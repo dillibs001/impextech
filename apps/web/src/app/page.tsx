@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Smartphone, Laptop, Tablet, Headphones, ShieldCheck, BatteryCharging, BadgeCheck, RotateCcw } from 'lucide-react';
+import { InstagramIcon } from '@/components/icons/InstagramIcon';
 
 export default function Home() {
   return (
@@ -158,6 +159,24 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Instagram Community Banner */}
+          <div className="mt-16 text-center max-w-2xl mx-auto bg-gradient-to-r from-purple-50 via-pink-50 to-amber-50 p-8 rounded-3xl border border-pink-100 flex flex-col items-center">
+            <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center text-white mb-4 shadow-sm">
+              <InstagramIcon className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">See Unboxing & Daily Batch Drops</h3>
+            <p className="text-sm text-slate-600 mb-6">Watch our live battery tests, IMEI verification proofs, and new arrival videos straight from Canada.</p>
+            <a 
+              href="https://www.instagram.com/impextech/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-all flex items-center gap-2 shadow-sm hover:shadow"
+            >
+              <InstagramIcon className="w-4 h-4 text-pink-400" />
+              Follow @impextech on Instagram
+            </a>
           </div>
         </div>
       </section>
