@@ -22,6 +22,14 @@ const CREATE_TAX_CATEGORY = `
   }
 `;
 
+const GET_SHIPPING_METHODS = `
+  query GetShippingMethods {
+    shippingMethods {
+      items { id code }
+    }
+  }
+`;
+
 const CREATE_SHIPPING_METHOD = `
   mutation CreateShippingMethod($input: CreateShippingMethodInput!) {
     createShippingMethod(input: $input) {
@@ -163,35 +171,43 @@ async function seed() {
     }
 
     // 2. Shipping Method
-    try {
-      await request(CREATE_SHIPPING_METHOD, {
-        input: {
-          code: 'standard-shipping',
-          translations: [{ languageCode: 'en', name: 'Standard Shipping', description: 'Standard Shipping' }],
-          checker: { code: 'default-shipping-eligibility-checker', arguments: [{ name: 'orderTotal', value: '0' }] },
-          calculator: {
-            code: 'default-shipping-calculator',
-            arguments: [
-              { name: 'rate', value: '500000', type: 'int' },
-              { name: 'includesTax', value: 'auto', type: 'string' },
-              { name: 'taxRate', value: '0', type: 'int' }
-            ]
+    const smData = await request<{ shippingMethods: { items: Array<{ id: string; code: string }> } }>(GET_SHIPPING_METHODS);
+    if (!smData.shippingMethods.items.some(sm => sm.code === 'standard-shipping')) {
+      try {
+        await request(CREATE_SHIPPING_METHOD, {
+          input: {
+            code: 'standard-shipping',
+            fulfillmentHandler: 'manual-fulfillment',
+            translations: [{ languageCode: 'en', name: 'Standard Shipping', description: 'Insured nationwide courier delivery' }],
+            checker: { code: 'default-shipping-eligibility-checker', arguments: [{ name: 'orderTotal', value: '0' }] },
+            calculator: {
+              code: 'default-shipping-calculator',
+              arguments: [
+                { name: 'rate', value: '500000' },
+                { name: 'includesTax', value: 'auto' },
+                { name: 'taxRate', value: '0' }
+              ]
+            }
           }
-        }
-      });
-      console.log('Created Standard Shipping Method');
-    } catch {
-      // Shipping method may already exist or fail if arguments differ
+        });
+        console.log('Created Standard Shipping Method');
+      } catch (smErr) {
+        console.log('Notice on shipping method:', smErr instanceof Error ? smErr.message : smErr);
+      }
     }
 
-    // 3. Payment Method
+    // 3. Payment Method (Paystack)
     const pmData = await request<{ paymentMethods: { items: PaymentMethodItem[] } }>(GET_PAYMENT_METHODS);
     if (!pmData.paymentMethods.items.some(pm => pm.code === 'paystack')) {
       await request(CREATE_PAYMENT_METHOD, {
         input: {
           code: 'paystack',
-          name: 'Paystack',
-          handler: { code: 'paystack', arguments: [] }
+          enabled: true,
+          translations: [{ languageCode: 'en', name: 'Paystack', description: 'Pay securely via Paystack' }],
+          handler: {
+            code: 'paystack',
+            arguments: [{ name: 'secretKey', value: process.env.PAYSTACK_SECRET_KEY || 'sk_test_placeholder' }]
+          }
         }
       });
       console.log('Created Paystack Payment Method');
