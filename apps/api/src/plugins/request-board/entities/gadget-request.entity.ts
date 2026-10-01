@@ -8,38 +8,38 @@ export class GadgetRequest extends VendureEntity {
     }
 
     @Column()
-    deviceType: string;
+    deviceType!: string;
 
     @Column()
-    brand: string;
+    brand!: string;
 
     @Column()
-    model: string;
+    model!: string;
 
     @Column()
-    storagePreference: string;
+    storagePreference!: string;
 
     @Column()
-    colorPreference: string;
+    colorPreference!: string;
 
     @Column()
-    conditionPreference: string;
+    conditionPreference!: string;
 
     @Column('int')
-    budgetMax: number;
+    budgetMax!: number;
 
     @Column('text')
-    additionalNotes: string;
+    additionalNotes!: string;
 
     @Column({ default: 'pending' })
-    status: string; // pending, sourcing, quoted, accepted, declined
+    status!: string; // pending, sourcing, quoted, accepted, declined
 
     @Column()
-    customerId: string;
+    customerId!: string;
 
     @Column('int', { nullable: true })
-    sourcePriceCAD: number;
+    sourcePriceCAD!: number;
 
     @Column('int', { nullable: true })
-    quotedPriceNGN: number;
+    quotedPriceNGN!: number;
 }

@@ -22,5 +22,8 @@
       "better-sqlite3",
       "sharp"
     ]
+  },
+  "dependencies": {
+    "sqlite3": "^6.0.1"
   }
 }
