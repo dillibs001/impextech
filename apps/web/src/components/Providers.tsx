@@ -3,6 +3,8 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core';
 import { ApolloProvider } from '@apollo/client/react';
 import { ReactNode } from 'react';
+import { CartProvider } from '@/context/CartContext';
+import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const client = new ApolloClient({
   link: new HttpLink({
@@ -14,7 +16,10 @@ const client = new ApolloClient({
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ApolloProvider client={client}>
-      {children}
+      <CartProvider>
+        {children}
+        <CartDrawer />
+      </CartProvider>
     </ApolloProvider>
   );
 }

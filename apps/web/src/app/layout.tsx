@@ -8,6 +8,7 @@ import { XIcon } from '@/components/icons/XIcon';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { AiConsultant } from '@/components/chat/AiConsultant';
 import { WhatsAppButton } from '@/components/chat/WhatsAppButton';
+import { HeaderCartButton } from '@/components/cart/HeaderCartButton';
 
 export const metadata: Metadata = {
   title: 'impextech | Canada-Certified Refurbished & Used Gadgets',
@@ -124,16 +125,7 @@ export default function RootLayout({
                 </div>
 
                 {/* Cart Button */}
-                <Link 
-                  href="/products" 
-                  className="p-2.5 hover:bg-slate-100 rounded-full transition-colors relative flex items-center justify-center border border-slate-200" 
-                  aria-label="Cart"
-                >
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-[#111111]" />
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    0
-                  </span>
-                </Link>
+                <HeaderCartButton />
 
                 <Link href="/products" className="md:hidden p-2 hover:bg-slate-100 rounded-full transition-colors" aria-label="Menu">
                   <Menu className="w-5 h-5 text-[#111111]" />

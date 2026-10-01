@@ -6,6 +6,7 @@ import {
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { notFound } from 'next/navigation';
 import { CATALOG_PRODUCTS } from '@/lib/catalog';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -145,22 +146,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
                         {/* Conversion CTAs */}
                         <div>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <Link
-                                    href="/checkout"
-                                    className="flex-1 bg-slate-900 hover:bg-red-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
-                                >
-                                    <ShoppingCart size={18} /> Buy Now (Card / Transfer)
-                                </Link>
+                            <div className="flex flex-col gap-3">
+                                {/* Primary Back Market Add to Cart Button */}
+                                <AddToCartButton product={product} variant="full" />
 
-                                <a
-                                    href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I want to purchase the Canada-imported ${product.name} (${formatPrice(product.priceNgn)}). Please send the physical inspection proof video and account details.`)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md text-sm"
-                                >
-                                    <WhatsAppIcon className="w-4 h-4 fill-current" /> Order via WhatsApp
-                                </a>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <Link
+                                        href="/checkout"
+                                        className="flex-1 bg-white hover:bg-slate-50 text-[#111111] font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-300 text-xs sm:text-sm"
+                                    >
+                                        Direct Checkout
+                                    </Link>
+
+                                    <a
+                                        href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I want to purchase the Canada-imported ${product.name} (${formatPrice(product.priceNgn)}). Please send the physical inspection proof video and account details.`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-3.5 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm text-xs sm:text-sm"
+                                    >
+                                        <WhatsAppIcon className="w-4 h-4 fill-current" /> Order via WhatsApp
+                                    </a>
+                                </div>
                             </div>
 
                             {/* Reassurance notes */}

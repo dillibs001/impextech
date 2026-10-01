@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BatteryCharging, Star, ShieldCheck, Heart, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { CatalogProduct } from '@/lib/catalog';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 export function CategoryProductGrid({ initialProducts }: { initialProducts: CatalogProduct[] }) {
     const [activeTab, setActiveTab] = useState<string>('All');
@@ -141,21 +142,23 @@ export function CategoryProductGrid({ initialProducts }: { initialProducts: Cata
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex items-center gap-2 mt-3.5">
+                                <div className="flex items-center gap-1.5 mt-3.5">
                                     <Link
                                         href={`/products/${item.slug}`}
-                                        className="flex-1 bg-[#111111] hover:bg-red-600 text-white text-xs font-bold py-2.5 px-3 rounded-xl text-center transition-colors shadow-2xs"
+                                        className="flex-1 bg-[#111111] hover:bg-slate-800 text-white text-xs font-bold py-2 px-2.5 rounded-xl text-center transition-colors shadow-2xs"
                                     >
-                                        View Deal
+                                        View
                                     </Link>
+                                    <AddToCartButton product={item} variant="compact" />
                                     <a
                                         href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I want to purchase the Canada-imported ${item.name} (${formatPrice(item.priceNgn)}). Is it still available?`)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="p-2.5 bg-[#25D366] hover:bg-[#20ba59] text-white rounded-xl transition-colors shadow-2xs flex-shrink-0"
+                                        className="p-2 bg-[#25D366] hover:bg-[#20ba59] text-white rounded-xl transition-colors shadow-2xs flex-shrink-0 flex items-center justify-center"
                                         aria-label="Order via WhatsApp"
+                                        title="Order via WhatsApp"
                                     >
-                                        <WhatsAppIcon className="w-4 h-4 fill-current" />
+                                        <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
                                     </a>
                                 </div>
                             </div>
