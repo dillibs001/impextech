@@ -29,7 +29,11 @@ async function vendureFetch(query: string, variables: any = {}) {
     if (setCookieHeader && setCookieHeader.includes('vendure-auth-token')) {
         const tokenMatch = setCookieHeader.match(/vendure-auth-token=([^;]+)/);
         if (tokenMatch) {
-            cookieStore.set('vendure-auth-token', tokenMatch[1], { path: '/', httpOnly: true });
+            try {
+                cookieStore.set('vendure-auth-token', tokenMatch[1], { path: '/', httpOnly: true });
+            } catch {
+                // In Server Components / read operations, Next.js disallows setting cookies; ignore safely
+            }
         }
     }
 

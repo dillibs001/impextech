@@ -30,7 +30,7 @@ export default async function ProductsPage() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {products.map((product: any) => {
-                        const priceValue = product.priceWithTax.min || product.priceWithTax.value;
+                        const priceValue = product.priceWithTax?.min ?? product.priceWithTax?.value ?? 0;
                         
                         return (
                             <Link href={`/products/${product.slug}`} key={product.productId} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">

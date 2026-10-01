@@ -8,7 +8,7 @@ type Message = { role: 'user' | 'assistant'; content: string };
 export function AiConsultant() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: 'Hi! I am your ImpexTech AI consultant. Are you looking for a specific gadget or need a recommendation?' }
+        { role: 'assistant', content: 'Hi! I am your impextech AI consultant. Are you looking for a specific gadget or need a recommendation?' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +61,7 @@ export function AiConsultant() {
                     {/* Header */}
                     <div className="bg-emerald-600 text-white p-4 flex justify-between items-center">
                         <div>
-                            <h3 className="font-bold">ImpexTech Consultant</h3>
+                            <h3 className="font-bold">impextech Consultant</h3>
                             <p className="text-xs text-emerald-100">Powered by Gemini AI</p>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="hover:bg-emerald-500 p-1 rounded transition-colors">

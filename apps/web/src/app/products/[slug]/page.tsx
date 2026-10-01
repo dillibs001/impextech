@@ -2,7 +2,7 @@ import { queryVendure, GET_PRODUCT_BY_SLUG_QUERY } from '@/lib/vendure';
 import { ShieldCheck, BatteryCharging, ShieldAlert, ShoppingCart, Info } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     let data;
     try {
@@ -73,7 +73,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
                         </div>
                     </div>
 
-                    <div className="prose text-slate-600 mb-8 max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
+                    <div className="prose text-slate-600 mb-8 max-w-none" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
 
                     <button className="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
                         <ShoppingCart size={20} /> Add to Cart
