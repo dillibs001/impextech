@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { bootstrap } from '@vendure/core';
+import { config } from './vendure-config';
 import { CATALOG_PRODUCTS } from './catalog-data';
 
 const ADMIN_API = 'http://localhost:3001/admin-api';
@@ -91,10 +93,33 @@ interface ProductItem {
   slug: string;
 }
 
+async function isServerRunning(): Promise<boolean> {
+  try {
+    const res = await axios.post(
+      ADMIN_API,
+      { query: '{ __typename }' },
+      { timeout: 1500 }
+    );
+    return res.status === 200;
+  } catch {
+    return false;
+  }
+}
+
 async function seed() {
   console.log('Starting seed process...');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let appInstance: { close: () => Promise<void> } | null = null;
 
   try {
+    const running = await isServerRunning();
+    if (!running) {
+      console.log('Vendure server not currently active on port 3001. Starting in-process instance...');
+      const app = await bootstrap(config);
+      appInstance = app;
+      console.log('In-process Vendure instance successfully bootstrapped.');
+    }
+
     const authRes = await axios.post(ADMIN_API, {
       query: AUTH_MUTATION,
       variables: {
@@ -211,11 +236,21 @@ async function seed() {
       console.log(`Created ${item.slug}`);
     }
 
-    console.table(summary);
+    if (summary.length > 0) {
+      console.table(summary);
+    }
     console.log('Seed process completed successfully.');
   } catch (err: unknown) {
     console.error('Error seeding:', err);
+  } finally {
+    if (appInstance) {
+      console.log('Closing in-process Vendure instance...');
+      await appInstance.close();
+      console.log('In-process Vendure instance closed.');
+    }
   }
 }
 
-seed();
+seed().then(() => {
+  process.exit(0);
+});
