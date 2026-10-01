@@ -44,7 +44,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                             
                             {/* Badges on preview */}
                             <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-                                <span className="bg-slate-900 text-white text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
+                                <span className="bg-[#2B2E35] text-white text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
                                     Grade: {product.condition}
                                 </span>
                                 <span className="bg-red-50 text-red-600 border border-red-100 text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">

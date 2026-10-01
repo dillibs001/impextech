@@ -58,7 +58,7 @@ export function CartDrawer() {
                                 </p>
                                 <button
                                     onClick={() => setIsCartOpen(false)}
-                                    className="bg-[#111111] hover:bg-red-600 text-white text-xs font-bold px-6 py-3 rounded-full transition-colors"
+                                    className="bg-[#2B2E35] hover:bg-[#1E2127] text-white text-xs font-bold px-6 py-3 rounded-full transition-colors shadow-sm"
                                 >
                                     Browse Canada Stock
                                 </button>
@@ -154,7 +154,7 @@ export function CartDrawer() {
                                 <Link
                                     href="/checkout"
                                     onClick={() => setIsCartOpen(false)}
-                                    className="w-full bg-[#111111] hover:bg-red-600 text-white font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2 shadow-sm"
+                                    className="w-full bg-[#2B2E35] hover:bg-red-600 text-white font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2 shadow-sm"
                                 >
                                     <span>Proceed to Checkout</span>
                                     <ArrowRight className="w-4 h-4" />

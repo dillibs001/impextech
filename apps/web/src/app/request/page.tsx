@@ -123,7 +123,7 @@ export default function RequestBoardPage() {
 
                 {status === 'error' && <p className="text-red-500 text-sm">An error occurred. Please try again.</p>}
 
-                <button type="submit" disabled={status === 'loading'} className="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-70">
+                <button type="submit" disabled={status === 'loading'} className="w-full bg-[#2B2E35] hover:bg-red-600 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-70 shadow-sm cursor-pointer">
                     {status === 'loading' ? 'Submitting...' : 'Submit Request'}
                 </button>
             </form>

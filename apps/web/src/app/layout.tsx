@@ -27,8 +27,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-[#FBFBFB] text-[#111111]">
         <Providers>
-          {/* Top Announcement Bar (Back Market Style) */}
-          <div className="bg-[#111111] text-white text-xs py-2 px-4 border-b border-black/10">
+          {/* Top Announcement Bar (Back Market Style with Logo Ash Color) */}
+          <div className="bg-[#24272E] text-white text-xs py-2 px-4 border-b border-[#363B47]">
             <div className="container mx-auto max-w-7xl flex items-center justify-between">
               <div className="flex items-center gap-3 mx-auto sm:mx-0">
                 <span className="flex items-center gap-1.5 font-semibold text-emerald-400">
@@ -170,8 +170,8 @@ export default function RootLayout({
             {children}
           </main>
 
-          {/* Back Market Style Footer */}
-          <footer className="bg-[#111111] text-white pt-16 pb-12 mt-20 border-t border-black">
+          {/* Back Market Style Footer (Styled with Brand Logo Ash Slate) */}
+          <footer className="bg-[#1E2127] text-white pt-16 pb-12 mt-20 border-t border-[#2F343F]">
             <div className="container mx-auto max-w-7xl px-4 grid grid-cols-1 md:grid-cols-4 gap-10">
               
               {/* Brand Column */}

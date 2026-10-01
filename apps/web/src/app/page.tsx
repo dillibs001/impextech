@@ -35,7 +35,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/products"
-                  className="bg-[#111111] hover:bg-red-600 text-white font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-sm"
+                  className="bg-[#2B2E35] hover:bg-red-600 text-white font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-sm"
                 >
                   Shop all verified drops <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -69,7 +69,7 @@ export default function Home() {
                   alt="iPhone 15 Pro Max Natural Titanium"
                   className="max-h-[260px] object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute -bottom-2 right-0 bg-[#111111] text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md">
+                <div className="absolute -bottom-2 right-0 bg-[#2B2E35] border border-[#3E4452] text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md">
                   Save ₦350,000
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <div className="bg-white p-6 rounded-3xl border-2 border-[#111111] shadow-md flex flex-col justify-between relative">
+          <div className="bg-white p-6 rounded-3xl border-2 border-[#2B2E35] shadow-md flex flex-col justify-between relative">
             <span className="absolute -top-3 right-6 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
               Flagship Grade
             </span>
@@ -375,9 +375,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. BACK MARKET STYLE CUSTOM SOURCING BANNER */}
+      {/* 6. BACK MARKET STYLE CUSTOM SOURCING BANNER (Logo Ash Div) */}
       <section className="container mx-auto max-w-7xl px-4">
-        <div className="bg-[#111111] text-white rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-black shadow-lg">
+        <div className="bg-gradient-to-br from-[#24272E] via-[#2B2E36] to-[#1E2127] text-white rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-[#3E4452] shadow-xl">
           <div className="max-w-xl">
             <span className="text-xs font-black text-red-500 uppercase tracking-wider block mb-2">Direct Sourcing Board</span>
             <h3 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">Looking for a specific model or storage size?</h3>

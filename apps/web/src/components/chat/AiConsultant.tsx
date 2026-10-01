@@ -49,7 +49,7 @@ export function AiConsultant() {
             {!isOpen && (
                 <button 
                     onClick={() => setIsOpen(true)}
-                    className="bg-slate-900 hover:bg-slate-800 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-105 flex items-center gap-2 border border-slate-700/60"
+                    className="bg-[#2B2E35] hover:bg-[#1E2127] text-white p-4 rounded-full shadow-2xl transition-all hover:scale-105 flex items-center gap-2 border border-[#3E4452] cursor-pointer"
                     aria-label="Ask AI Consultant"
                 >
                     <div className="relative">
@@ -64,7 +64,7 @@ export function AiConsultant() {
             {isOpen && (
                 <div className="bg-white rounded-3xl shadow-2xl w-[350px] sm:w-[400px] h-[520px] flex flex-col border border-slate-200 overflow-hidden">
                     {/* Header */}
-                    <div className="bg-slate-950 text-white p-4 flex justify-between items-center border-b border-slate-800">
+                    <div className="bg-[#1E2127] text-white p-4 flex justify-between items-center border-b border-[#2F343F]">
                         <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-red-600/20 text-red-400 flex items-center justify-center">
                                 <Bot size={18} />

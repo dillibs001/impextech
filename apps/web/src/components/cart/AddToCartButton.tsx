@@ -65,7 +65,7 @@ export function AddToCartButton({ product, className = '', variant = 'full' }: A
     return (
         <button
             onClick={handleAdd}
-            className={`w-full bg-[#111111] hover:bg-red-600 text-white font-extrabold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm cursor-pointer ${
+            className={`w-full bg-[#2B2E35] hover:bg-red-600 text-white font-extrabold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm cursor-pointer ${
                 isAdded ? 'bg-emerald-600 hover:bg-emerald-600' : ''
             } ${className}`}
         >

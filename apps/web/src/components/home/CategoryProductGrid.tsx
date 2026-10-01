@@ -42,7 +42,7 @@ export function CategoryProductGrid({ initialProducts }: { initialProducts: Cata
                             onClick={() => setActiveTab(cat.id)}
                             className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                                 isActive 
-                                    ? 'bg-[#111111] text-white shadow-sm' 
+                                    ? 'bg-[#2B2E35] text-white shadow-sm ring-1 ring-[#3E4452]' 
                                     : 'bg-white text-slate-700 hover:text-black hover:bg-slate-100 border border-slate-200'
                             }`}
                         >
@@ -72,7 +72,7 @@ export function CategoryProductGrid({ initialProducts }: { initialProducts: Cata
                             <div>
                                 <div className="flex items-center justify-between gap-1 mb-2">
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#111111] text-white">
+                                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#2B2E35] text-white">
                                             {item.condition}
                                         </span>
                                         <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-1">
@@ -145,7 +145,7 @@ export function CategoryProductGrid({ initialProducts }: { initialProducts: Cata
                                 <div className="flex items-center gap-1.5 mt-3.5">
                                     <Link
                                         href={`/products/${item.slug}`}
-                                        className="flex-1 bg-[#111111] hover:bg-slate-800 text-white text-xs font-bold py-2 px-2.5 rounded-xl text-center transition-colors shadow-2xs"
+                                        className="flex-1 bg-[#2B2E35] hover:bg-[#1E2127] text-white text-xs font-bold py-2 px-2.5 rounded-xl text-center transition-colors shadow-2xs"
                                     >
                                         View
                                     </Link>
