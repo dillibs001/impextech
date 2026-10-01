@@ -17,6 +17,16 @@ export default async function ProductsPage() {
         return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value / 100);
     };
 
+    const getFallbackImage = (name: string) => {
+        const n = name.toLowerCase();
+        if (n.includes('macbook')) return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80';
+        if (n.includes('ipad')) return 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=80';
+        if (n.includes('watch')) return 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=600&q=80';
+        if (n.includes('airpods')) return 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=80';
+        if (n.includes('samsung')) return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80';
+        return 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80';
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-slate-900 mb-8">All Verified Gadgets</h1>
@@ -31,17 +41,12 @@ export default async function ProductsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {products.map((product: any) => {
                         const priceValue = product.priceWithTax?.min ?? product.priceWithTax?.value ?? 0;
+                        const imgSrc = product.productAsset?.preview || getFallbackImage(product.productName);
                         
                         return (
                             <Link href={`/products/${product.slug}`} key={product.productId} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
                                 <div className="aspect-square bg-slate-50 relative p-6">
-                                    {product.productAsset ? (
-                                        <img src={product.productAsset.preview} alt={product.productName} className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                            <Smartphone size={64} />
-                                        </div>
-                                    )}
+                                    <img src={imgSrc} alt={product.productName} className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300" />
                                     {/* Trust Badge overlay */}
                                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-emerald-700 flex items-center gap-1 shadow-sm border border-emerald-100">
                                         <ShieldCheck size={14} /> Canada Verified

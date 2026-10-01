@@ -18,17 +18,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const primaryVariant = product.variants[0];
     const formatPrice = (value: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value / 100);
 
+    const getFallbackImage = (name: string) => {
+        const n = name.toLowerCase();
+        if (n.includes('macbook')) return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80';
+        if (n.includes('ipad')) return 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80';
+        if (n.includes('watch')) return 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80';
+        if (n.includes('airpods')) return 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80';
+        if (n.includes('samsung')) return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80';
+        return 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80';
+    };
+
+    const displayImage = product.assets?.[0]?.preview || getFallbackImage(product.name);
+
     return (
         <div className="container mx-auto px-4 py-12">
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
                 
                 {/* Image Gallery */}
                 <div className="md:w-1/2 bg-slate-50 p-8 flex items-center justify-center min-h-[400px]">
-                    {product.assets?.[0] ? (
-                        <img src={product.assets[0].preview} alt={product.name} className="max-w-full max-h-[500px] object-contain" />
-                    ) : (
-                        <div className="text-slate-300">No image available</div>
-                    )}
+                    <img src={displayImage} alt={product.name} className="max-w-full max-h-[500px] object-contain rounded-2xl" />
                 </div>
 
                 {/* Details */}
