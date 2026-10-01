@@ -1,6 +1,6 @@
-import gql from 'graphql-tag';
+import { parse } from 'graphql';
 
-export const shopApiExtensions = gql`
+export const shopApiExtensions = parse(`
     input SubmitGadgetRequestInput {
         deviceType: String!
         brand: String!
@@ -34,4 +34,4 @@ export const shopApiExtensions = gql`
     extend type Mutation {
         submitGadgetRequest(input: SubmitGadgetRequestInput!): GadgetRequest!
     }
-`;
+`);
