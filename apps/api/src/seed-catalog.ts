@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { catalog } from '../../web/src/lib/catalog';
+import { CATALOG_PRODUCTS } from './catalog-data';
 
 const ADMIN_API = 'http://localhost:3001/admin-api';
 
@@ -76,6 +76,21 @@ const GET_PRODUCTS = `
   }
 `;
 
+interface TaxCategoryItem {
+  id: string;
+  name: string;
+}
+
+interface PaymentMethodItem {
+  id: string;
+  code: string;
+}
+
+interface ProductItem {
+  id: string;
+  slug: string;
+}
+
 async function seed() {
   console.log('Starting seed process...');
 
@@ -87,15 +102,14 @@ async function seed() {
       }
     });
 
-    const authData = authRes.data.data.authenticate;
-    if (authData.__typename === 'InvalidCredentialsError') {
+    const authData = authRes.data?.data?.authenticate;
+    if (authData?.__typename === 'InvalidCredentialsError') {
       throw new Error(`Auth failed: ${authData.message}`);
     }
 
-    // Auth token can be in header or cookie. Vendure returns 'vendure-auth-token' header usually.
     const token = authRes.headers['vendure-auth-token'];
     const cookie = authRes.headers['set-cookie'];
-    
+
     const client = axios.create({
       baseURL: ADMIN_API,
       headers: {
@@ -104,19 +118,19 @@ async function seed() {
       }
     });
 
-    const request = async (query: string, variables?: any) => {
+    const request = async <T>(query: string, variables?: Record<string, unknown>): Promise<T> => {
       const res = await client.post('', { query, variables });
       if (res.data.errors) {
         throw new Error(JSON.stringify(res.data.errors));
       }
-      return res.data.data;
+      return res.data.data as T;
     };
 
     // 1. Tax Category
-    let taxCategories = await request(GET_TAX_CATEGORIES);
-    let taxCategoryId = taxCategories.taxCategories.items.find((tc: any) => tc.name === 'Standard')?.id;
+    const taxCategories = await request<{ taxCategories: { items: TaxCategoryItem[] } }>(GET_TAX_CATEGORIES);
+    let taxCategoryId = taxCategories.taxCategories.items.find(tc => tc.name === 'Standard')?.id;
     if (!taxCategoryId) {
-      const tcRes = await request(CREATE_TAX_CATEGORY, {
+      const tcRes = await request<{ createTaxCategory: { id: string } }>(CREATE_TAX_CATEGORY, {
         input: { name: 'Standard', isDefault: true }
       });
       taxCategoryId = tcRes.createTaxCategory.id;
@@ -130,17 +144,24 @@ async function seed() {
           code: 'standard-shipping',
           translations: [{ languageCode: 'en', name: 'Standard Shipping', description: 'Standard Shipping' }],
           checker: { code: 'default-shipping-eligibility-checker', arguments: [{ name: 'orderTotal', value: '0' }] },
-          calculator: { code: 'default-shipping-calculator', arguments: [{ name: 'rate', value: '500000', type: 'int' }, { name: 'includesTax', value: 'auto', type: 'string' }, { name: 'taxRate', value: '0', type: 'int' }] }
+          calculator: {
+            code: 'default-shipping-calculator',
+            arguments: [
+              { name: 'rate', value: '500000', type: 'int' },
+              { name: 'includesTax', value: 'auto', type: 'string' },
+              { name: 'taxRate', value: '0', type: 'int' }
+            ]
+          }
         }
       });
       console.log('Created Standard Shipping Method');
-    } catch (e) {
-      // Might already exist or args might be wrong depending on plugins, ignore for now
+    } catch {
+      // Shipping method may already exist or fail if arguments differ
     }
 
     // 3. Payment Method
-    const pmData = await request(GET_PAYMENT_METHODS);
-    if (!pmData.paymentMethods.items.some((pm: any) => pm.code === 'paystack')) {
+    const pmData = await request<{ paymentMethods: { items: PaymentMethodItem[] } }>(GET_PAYMENT_METHODS);
+    if (!pmData.paymentMethods.items.some(pm => pm.code === 'paystack')) {
       await request(CREATE_PAYMENT_METHOD, {
         input: {
           code: 'paystack',
@@ -152,28 +173,28 @@ async function seed() {
     }
 
     // 4. Products
-    const existingProds = await request(GET_PRODUCTS);
-    const existingSlugs = existingProds.products.items.map((p: any) => p.slug);
-    
-    console.log('Seeding products...');
-    const summary = [];
+    const existingProds = await request<{ products: { items: ProductItem[] } }>(GET_PRODUCTS);
+    const existingSlugs = existingProds.products.items.map(p => p.slug);
 
-    for (const item of catalog) {
+    console.log('Seeding products...');
+    const summary: Array<{ name: string; sku: string; variantId: string }> = [];
+
+    for (const item of CATALOG_PRODUCTS) {
       if (existingSlugs.includes(item.slug)) {
         console.log(`Skipping ${item.slug}, already exists.`);
         continue;
       }
 
-      const prodRes = await request(CREATE_PRODUCT, {
+      const prodRes = await request<{ createProduct: { id: string } }>(CREATE_PRODUCT, {
         input: {
           translations: [{ languageCode: 'en', name: 'Pre-owned ' + item.name, slug: item.slug, description: item.description }],
           customFields: { condition: item.condition, sourceCountry: 'Canada' }
         }
       });
-      
+
       const productId = prodRes.createProduct.id;
 
-      const varRes = await request(CREATE_PRODUCT_VARIANTS, {
+      const varRes = await request<{ createProductVariants: Array<{ id: string }> }>(CREATE_PRODUCT_VARIANTS, {
         input: [{
           productId,
           sku: item.slug,
@@ -192,8 +213,7 @@ async function seed() {
 
     console.table(summary);
     console.log('Seed process completed successfully.');
-
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error seeding:', err);
   }
 }

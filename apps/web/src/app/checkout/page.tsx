@@ -171,9 +171,10 @@ export default function CheckoutPage() {
       });
 
       paystack.openIframe();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.message || 'An error occurred during checkout. Please try again.');
+      const message = err instanceof Error ? err.message : 'An error occurred during checkout. Please try again.';
+      alert(message);
       setIsProcessing(false);
     }
   };
