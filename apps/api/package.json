@@ -1,0 +1,35 @@
+{
+  "name": "@impextech/api",
+  "version": "1.0.0",
+  "description": "Vendure backend application for impextech",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "start:prod": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@vendure/admin-ui-plugin": "^3.0.0",
+    "@vendure/asset-server-plugin": "^3.0.0",
+    "@vendure/core": "^3.0.0",
+    "@vendure/email-plugin": "^3.0.0",
+    "axios": "^1.20.0",
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@apollo/protobufjs",
+      "bcrypt",
+      "better-sqlite3",
+      "sharp"
+    ]
+  }
+}
