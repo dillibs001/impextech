@@ -31,3 +31,8 @@ pnpm-debug.log*
 
 # Vendure
 static/assets/
+*.sqlite*
+.vendure/
+
+# pnpm store
+.pnpm-store/

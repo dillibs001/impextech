@@ -43,10 +43,10 @@ export default function RootLayout({
               
               {/* Desktop Nav */}
               <nav className="hidden md:flex gap-8 items-center text-sm font-medium">
-                <Link href="/" className="hover:text-emerald-600 transition-colors">Home</Link>
-                <Link href="/products" className="hover:text-emerald-600 transition-colors">Products</Link>
-                <Link href="/request" className="hover:text-emerald-600 transition-colors">Request a Gadget</Link>
-                <Link href="/about" className="hover:text-emerald-600 transition-colors">About</Link>
+                <Link href="/" className="hover:text-red-600 transition-colors">Home</Link>
+                <Link href="/products" className="hover:text-red-600 transition-colors">Products</Link>
+                <Link href="/request" className="hover:text-red-600 transition-colors">Request a Gadget</Link>
+                <Link href="/about" className="hover:text-red-600 transition-colors">About</Link>
               </nav>
 
               {/* Actions & Social Badges */}
@@ -82,13 +82,13 @@ export default function RootLayout({
                   </a>
                 </div>
 
-                <button className="p-2 hover:bg-slate-100 rounded-full transition-colors relative" aria-label="Cart">
+                <Link href="/products" className="p-2 hover:bg-slate-100 rounded-full transition-colors relative" aria-label="Cart">
                   <ShoppingCart className="w-5 h-5 text-slate-700" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full"></span>
-                </button>
-                <button className="md:hidden p-2 hover:bg-slate-100 rounded-full transition-colors" aria-label="Menu">
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+                </Link>
+                <Link href="/products" className="md:hidden p-2 hover:bg-slate-100 rounded-full transition-colors" aria-label="Menu">
                   <Menu className="w-5 h-5" />
-                </button>
+                </Link>
               </div>
             </div>
           </header>
@@ -145,17 +145,17 @@ export default function RootLayout({
               <div>
                 <h3 className="text-white font-semibold mb-4">Quick Links</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/products" className="hover:text-emerald-400 transition-colors">All Products</Link></li>
-                  <li><Link href="/request" className="hover:text-emerald-400 transition-colors">Request a Gadget</Link></li>
-                  <li><Link href="/track" className="hover:text-emerald-400 transition-colors">Track Order</Link></li>
+                  <li><Link href="/products" className="hover:text-red-400 transition-colors">All Products</Link></li>
+                  <li><Link href="/request" className="hover:text-red-400 transition-colors">Request a Gadget</Link></li>
+                  <li><Link href="/track" className="hover:text-red-400 transition-colors">Track Order</Link></li>
                 </ul>
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-4">Company</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/about" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
-                  <li><Link href="/contact" className="hover:text-emerald-400 transition-colors">Contact</Link></li>
-                  <li><Link href="/guarantee" className="hover:text-emerald-400 transition-colors">Our Guarantee</Link></li>
+                  <li><Link href="/about" className="hover:text-red-400 transition-colors">About Us</Link></li>
+                  <li><Link href="/contact" className="hover:text-red-400 transition-colors">Contact</Link></li>
+                  <li><Link href="/guarantee" className="hover:text-red-400 transition-colors">Our Guarantee</Link></li>
                 </ul>
               </div>
               <div>

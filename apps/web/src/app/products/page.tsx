@@ -1,16 +1,22 @@
 import Link from 'next/link';
-import { queryVendure, GET_PRODUCTS_QUERY } from '@/lib/vendure';
-import { Smartphone, BatteryCharging, ShieldCheck } from 'lucide-react';
+import { queryVendure, GET_PRODUCTS_QUERY, ProductSearchItem } from '@/lib/vendure';
+import { Smartphone, ShieldCheck } from 'lucide-react';
+
+interface SearchResult {
+    search: {
+        items: ProductSearchItem[];
+    };
+}
 
 export default async function ProductsPage() {
-    let data;
+    let data: SearchResult | undefined;
     try {
-        data = await queryVendure(GET_PRODUCTS_QUERY);
-    } catch (e) {
+        data = await queryVendure<SearchResult>(GET_PRODUCTS_QUERY);
+    } catch {
         return <div className="container mx-auto p-8 text-center text-red-500">Failed to load products. Make sure the API is running.</div>;
     }
 
-    const products = data.search.items;
+    const products = data?.search?.items || [];
 
     // Helper to format minor units (e.g., 45000000 -> ₦450,000)
     const formatPrice = (value: number) => {
@@ -29,7 +35,15 @@ export default async function ProductsPage() {
 
     return (
         <div className="container mx-auto px-4 py-12">
-            <h1 className="text-3xl font-bold text-slate-900 mb-8">All Verified Gadgets</h1>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Verified Gadgets</h1>
+                    <p className="text-slate-500 text-sm mt-1">Directly imported from Canada • 7-day money-back guarantee</p>
+                </div>
+                <span className="text-xs font-semibold px-3 py-1 bg-red-50 text-red-700 border border-red-100 rounded-full self-start md:self-auto">
+                    {products.length} Gadgets Available
+                </span>
+            </div>
             
             {products.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm">
@@ -39,7 +53,7 @@ export default async function ProductsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {products.map((product: any) => {
+                    {products.map((product) => {
                         const priceValue = product.priceWithTax?.min ?? product.priceWithTax?.value ?? 0;
                         const imgSrc = product.productAsset?.preview || getFallbackImage(product.productName);
                         
@@ -48,15 +62,15 @@ export default async function ProductsPage() {
                                 <div className="aspect-square bg-slate-50 relative p-6">
                                     <img src={imgSrc} alt={product.productName} className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300" />
                                     {/* Trust Badge overlay */}
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-emerald-700 flex items-center gap-1 shadow-sm border border-emerald-100">
-                                        <ShieldCheck size={14} /> Canada Verified
+                                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-medium text-slate-700 flex items-center gap-1.5 shadow-sm border border-slate-100">
+                                        <ShieldCheck size={14} className="text-red-600" /> Canada Verified
                                     </div>
                                 </div>
                                 <div className="p-5 flex flex-col flex-1">
-                                    <h3 className="font-semibold text-slate-900 line-clamp-1">{product.productName}</h3>
-                                    <p className="text-emerald-600 font-bold text-lg mt-2">{formatPrice(priceValue)}</p>
+                                    <h3 className="font-semibold text-slate-900 line-clamp-1 group-hover:text-red-600 transition-colors">{product.productName}</h3>
+                                    <p className="text-red-600 font-bold text-lg mt-2">{formatPrice(priceValue)}</p>
                                     
-                                    <button className="mt-4 w-full bg-slate-900 hover:bg-emerald-600 text-white font-medium py-2 rounded-lg transition-colors">
+                                    <button className="mt-4 w-full bg-slate-900 hover:bg-red-600 text-white font-medium py-2 rounded-lg transition-colors">
                                         View Details
                                     </button>
                                 </div>

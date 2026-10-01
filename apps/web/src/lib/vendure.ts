@@ -1,4 +1,19 @@
-export async function queryVendure(query: string, variables: any = {}) {
+export interface ProductSearchItem {
+    productId: string;
+    slug: string;
+    productName: string;
+    description: string;
+    priceWithTax: {
+        min?: number;
+        max?: number;
+        value?: number;
+    };
+    productAsset?: {
+        preview: string;
+    } | null;
+}
+
+export async function queryVendure<T = unknown>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/shop-api';
     
     const res = await fetch(apiUrl, {
@@ -15,7 +30,7 @@ export async function queryVendure(query: string, variables: any = {}) {
         console.error('GraphQL Errors:', json.errors);
         throw new Error('Failed to fetch from Vendure API');
     }
-    return json.data;
+    return json.data as T;
 }
 
 export const GET_PRODUCTS_QUERY = `
