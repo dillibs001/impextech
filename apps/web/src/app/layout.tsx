@@ -3,6 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/Providers';
 import Link from 'next/link';
 import { ShoppingCart, Search, Menu, Heart, HelpCircle, ShieldCheck } from 'lucide-react';
+import { SearchBar } from '@/components/search/SearchBar';
 import { InstagramIcon } from '@/components/icons/InstagramIcon';
 import { XIcon } from '@/components/icons/XIcon';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
@@ -79,17 +80,7 @@ export default function RootLayout({
 
               {/* 2. Back Market Search Bar */}
               <div className="flex-1 max-w-2xl hidden md:block">
-                <Link href="/products" className="relative flex items-center w-full">
-                  <div className="w-full bg-slate-100 hover:bg-slate-200/80 transition-colors border border-slate-200 rounded-full py-2.5 pl-11 pr-4 text-xs text-slate-500 flex items-center justify-between cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <Search className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                      <span>Search phones, MacBooks, headphones, cameras, watches...</span>
-                    </div>
-                    <span className="text-[11px] font-bold text-red-600 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
-                      20 In Stock
-                    </span>
-                  </div>
-                </Link>
+                <SearchBar />
               </div>
 
               {/* 3. Header Action Links */}

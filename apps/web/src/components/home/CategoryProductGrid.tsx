@@ -7,9 +7,15 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { CatalogProduct } from '@/lib/catalog';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
-export function CategoryProductGrid({ initialProducts }: { initialProducts: CatalogProduct[] }) {
-    const [activeTab, setActiveTab] = useState<string>('All');
-
+export function CategoryProductGrid({ 
+    initialProducts, 
+    initialCategory, 
+    searchQuery 
+}: { 
+    initialProducts: CatalogProduct[];
+    initialCategory?: string;
+    searchQuery?: string;
+}) {
     const categories = [
         { id: 'All', label: 'All Canada Drops' },
         { id: 'Phones', label: 'Phones' },
@@ -20,14 +26,26 @@ export function CategoryProductGrid({ initialProducts }: { initialProducts: Cata
         { id: 'Accessories', label: 'Accessories' },
     ];
 
-    const filtered = activeTab === 'All' 
+    const validInitialTab = categories.find(c => c.id.toLowerCase() === initialCategory?.toLowerCase())?.id || 'All';
+    const [activeTab, setActiveTab] = useState<string>(validInitialTab);
+
+    let filtered = activeTab === 'All' 
         ? initialProducts 
         : initialProducts.filter(p => p.category.toLowerCase() === activeTab.toLowerCase());
+        
+    if (searchQuery) {
+        filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
     const formatPrice = (val: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(val);
 
     return (
         <div>
+            {searchQuery && (
+                <div className="mb-4 text-sm text-slate-600">
+                    Showing results for <span className="font-bold text-slate-900">"{searchQuery}"</span>
+                </div>
+            )}
             {/* Filter Tabs Bar (Back Market Pill Strip) */}
             <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar">
                 {categories.map((cat) => {

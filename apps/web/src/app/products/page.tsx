@@ -3,7 +3,15 @@ import { CategoryProductGrid } from '@/components/home/CategoryProductGrid';
 import { CATALOG_PRODUCTS } from '@/lib/catalog';
 import { ShieldCheck, BatteryCharging, RotateCcw, Award } from 'lucide-react';
 
-export default function ProductsPage() {
+export default async function ProductsPage({ 
+    searchParams 
+}: { 
+    searchParams: Promise<{ category?: string; q?: string }> 
+}) {
+    const params = await searchParams;
+    const category = params.category;
+    const q = params.q;
+
     return (
         <div className="container mx-auto px-4 py-12 max-w-6xl">
             {/* Header */}
@@ -36,7 +44,11 @@ export default function ProductsPage() {
             </div>
 
             {/* Filterable Products Grid */}
-            <CategoryProductGrid initialProducts={CATALOG_PRODUCTS} />
+            <CategoryProductGrid 
+                initialProducts={CATALOG_PRODUCTS} 
+                initialCategory={category}
+                searchQuery={q}
+            />
         </div>
     );
 }
