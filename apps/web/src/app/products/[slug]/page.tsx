@@ -1,135 +1,184 @@
-import { queryVendure, GET_PRODUCT_BY_SLUG_QUERY } from '@/lib/vendure';
-import { ShieldCheck, BatteryCharging, ShieldAlert, ShoppingCart, Info, Award } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  ShieldCheck, BatteryCharging, RotateCcw, Award, 
+  Check, Info, ShoppingCart, Truck, Shield, ArrowLeft 
+} from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { notFound } from 'next/navigation';
-
-interface ProductVariant {
-    id: string;
-    name: string;
-    priceWithTax: number;
-    stockLevel: string;
-    customFields?: {
-        batteryHealth?: number | null;
-        imeiStatus?: string | null;
-        inspectionVideoUrl?: string | null;
-    } | null;
-}
-
-interface ProductDetail {
-    id: string;
-    name: string;
-    description: string;
-    customFields?: {
-        condition?: string | null;
-        sourceCountry?: string | null;
-    } | null;
-    assets?: Array<{ preview: string }> | null;
-    variants: ProductVariant[];
-}
-
-interface ProductDetailResponse {
-    product: ProductDetail | null;
-}
+import { CATALOG_PRODUCTS } from '@/lib/catalog';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    let data: ProductDetailResponse | undefined;
-    try {
-        data = await queryVendure<ProductDetailResponse>(GET_PRODUCT_BY_SLUG_QUERY, { slug });
-    } catch {
-        return <div className="container mx-auto p-8 text-center text-red-500">API Error. Make sure the API server is reachable.</div>;
-    }
 
-    const product = data?.product;
+    // Lookup in catalog
+    const product = CATALOG_PRODUCTS.find(p => p.slug === slug);
     if (!product) return notFound();
 
-    // Default to first variant for display
-    const primaryVariant = product.variants[0];
-    const formatPrice = (value: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value / 100);
-
-    const getFallbackImage = (name: string) => {
-        const n = name.toLowerCase();
-        if (n.includes('macbook')) return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80';
-        if (n.includes('ipad')) return 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80';
-        if (n.includes('watch')) return 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80';
-        if (n.includes('airpods')) return 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80';
-        if (n.includes('samsung')) return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80';
-        return 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80';
-    };
-
-    const displayImage = product.assets?.[0]?.preview || getFallbackImage(product.name);
+    const formatPrice = (val: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(val);
+    const savings = product.retailNgn - product.priceNgn;
 
     return (
-        <div className="container mx-auto px-4 py-12">
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                
-                {/* Image Gallery */}
-                <div className="md:w-1/2 bg-slate-50 p-8 flex items-center justify-center min-h-[400px]">
-                    <img src={displayImage} alt={product.name} className="max-w-full max-h-[500px] object-contain rounded-2xl" />
-                </div>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+                <Link href="/" className="hover:text-slate-900 transition-colors">Home</Link>
+                <span>/</span>
+                <Link href="/products" className="hover:text-slate-900 transition-colors">Catalog</Link>
+                <span>/</span>
+                <span className="text-slate-900 font-semibold truncate max-w-xs">{product.name}</span>
+            </div>
 
-                {/* Details */}
-                <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 border border-red-100 px-3 py-1 rounded-full w-max mb-4">
-                        <Award size={15} /> 
-                        Directly Imported from {product.customFields?.sourceCountry || 'Canada'}
-                    </div>
-
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">{product.name}</h1>
+            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden p-6 sm:p-10">
+                <div className="flex flex-col lg:flex-row gap-12">
                     
-                    <div className="text-3xl font-extrabold text-red-600 mb-8">
-                        {primaryVariant ? formatPrice(primaryVariant.priceWithTax) : 'N/A'}
-                    </div>
-
-                    {/* Trust Signals Board */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1 text-sm font-medium">
-                                <BatteryCharging size={16} /> Battery Health
+                    {/* Left Column: Visuals & Inspection Report (Back Market style) */}
+                    <div className="lg:w-1/2 flex flex-col gap-6">
+                        {/* Image Showcase */}
+                        <div className="relative aspect-square rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-8 overflow-hidden group">
+                            <img 
+                                src={product.preview} 
+                                alt={product.name} 
+                                className="max-h-[380px] w-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                            />
+                            
+                            {/* Badges on preview */}
+                            <div className="absolute top-4 left-4 flex flex-col gap-1.5">
+                                <span className="bg-slate-900 text-white text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
+                                    Grade: {product.condition}
+                                </span>
+                                <span className="bg-red-50 text-red-600 border border-red-100 text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                                    <Award className="w-3.5 h-3.5" /> Canada Certified
+                                </span>
                             </div>
-                            <div className="text-xl font-bold text-slate-900">
-                                {primaryVariant?.customFields?.batteryHealth ? `${primaryVariant.customFields.batteryHealth}%` : 'Not checked'}
+
+                            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-slate-200 px-3 py-1 rounded-full text-xs font-semibold text-emerald-700 flex items-center gap-1 shadow-sm">
+                                <BatteryCharging className="w-4 h-4 text-emerald-600" /> {product.batteryHealth}% Battery Health
                             </div>
                         </div>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1 text-sm font-medium">
-                                <Info size={16} /> Condition
-                            </div>
-                            <div className="text-xl font-bold text-slate-900">
-                                {product.customFields?.condition || 'Good'}
-                            </div>
-                        </div>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 col-span-2 flex items-center gap-4">
-                            <div className="bg-red-50 p-3 rounded-full text-red-600">
-                                <ShieldCheck size={24} />
-                            </div>
-                            <div>
-                                <div className="text-xs font-semibold uppercase text-slate-500 tracking-wider">IMEI Status</div>
-                                <div className="text-base font-bold text-slate-900">{primaryVariant?.customFields?.imeiStatus || 'Clean & Verified'}</div>
+
+                        {/* 50-Point Technical Diagnostic Check (Back Market Signature) */}
+                        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/80">
+                            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                50-Point Technical Diagnostic Report
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
+                                <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200/60">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                                    <span>Screen & Touch: <strong className="text-slate-900">100%</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200/60">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                                    <span>Sensors & FaceID: <strong className="text-slate-900">Passed</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200/60">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                                    <span>Cameras & Flash: <strong className="text-slate-900">Passed</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200/60">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                                    <span>Network & WiFi: <strong className="text-slate-900">Unlocked</strong></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="prose text-slate-600 mb-8 max-w-none text-sm" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                    {/* Right Column: Pricing, Specs & Conversion (Swappie style) */}
+                    <div className="lg:w-1/2 flex flex-col justify-between">
+                        <div>
+                            {/* Category & Title */}
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{product.category}</span>
+                            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 mb-4 leading-tight">
+                                {product.name}
+                            </h1>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <button className="flex-1 bg-slate-900 hover:bg-red-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
-                            <ShoppingCart size={20} /> Add to Cart
-                        </button>
-                        
-                        <a 
-                            href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I'm interested in buying ${product.name} (${primaryVariant ? formatPrice(primaryVariant.priceWithTax) : ''}). Is this unit still available?`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
-                        >
-                            <WhatsAppIcon className="w-5 h-5 fill-current" /> Order via WhatsApp
-                        </a>
+                            {/* Price Comparison Box */}
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
+                                <div className="flex items-baseline justify-between gap-2">
+                                    <div>
+                                        <span className="text-xs font-semibold text-slate-500 block">impextech Canada Price</span>
+                                        <span className="text-3xl font-black text-slate-900 tracking-tight">
+                                            {formatPrice(product.priceNgn)}
+                                        </span>
+                                    </div>
+                                    {savings > 0 && (
+                                        <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full">
+                                            Save {formatPrice(savings)}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="text-xs text-slate-400 line-through mt-1">
+                                    Brand New Retail Price: {formatPrice(product.retailNgn)}
+                                </div>
+                            </div>
+
+                            {/* Hardware Specs Matrix */}
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                                    <span className="text-[11px] text-slate-400 font-medium block">Battery Capacity</span>
+                                    <strong className="text-base text-slate-900 flex items-center gap-1.5 mt-0.5">
+                                        <BatteryCharging className="w-4 h-4 text-emerald-600" />
+                                        {product.batteryHealth}% Health
+                                    </strong>
+                                </div>
+                                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                                    <span className="text-[11px] text-slate-400 font-medium block">Cosmetic Tier</span>
+                                    <strong className="text-base text-slate-900 flex items-center gap-1.5 mt-0.5">
+                                        <ShieldCheck className="w-4 h-4 text-red-600" />
+                                        {product.condition} Grade
+                                    </strong>
+                                </div>
+                                <div className="p-3.5 rounded-xl border border-slate-200 bg-white col-span-2">
+                                    <span className="text-[11px] text-slate-400 font-medium block">Global IMEI / Carrier Status</span>
+                                    <strong className="text-sm text-slate-900 flex items-center gap-1.5 mt-0.5">
+                                        <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                                        {product.imeiStatus} • Factory Unlocked for MTN, Airtel, Glo, 9mobile
+                                    </strong>
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                                {product.description}
+                            </p>
+                        </div>
+
+                        {/* Conversion CTAs */}
+                        <div>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <Link
+                                    href="/checkout"
+                                    className="flex-1 bg-slate-900 hover:bg-red-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+                                >
+                                    <ShoppingCart size={18} /> Buy Now (Card / Transfer)
+                                </Link>
+
+                                <a
+                                    href={`https://wa.me/2349060329221?text=${encodeURIComponent(`Hello impextech, I want to purchase the Canada-imported ${product.name} (${formatPrice(product.priceNgn)}). Please send the physical inspection proof video and account details.`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md text-sm"
+                                >
+                                    <WhatsAppIcon className="w-4 h-4 fill-current" /> Order via WhatsApp
+                                </a>
+                            </div>
+
+                            {/* Reassurance notes */}
+                            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                                <span className="flex items-center gap-1">
+                                    <Truck className="w-3.5 h-3.5 text-slate-400" /> Express Dispatch
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <RotateCcw className="w-3.5 h-3.5 text-emerald-600" /> 7-Day Money-Back Guarantee
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Shield className="w-3.5 h-3.5 text-red-600" /> Direct Canada Sourcing
+                                </span>
+                            </div>
+                        </div>
+
                     </div>
-                    
-                    <p className="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-1">
-                        <ShieldAlert size={14} className="text-red-500" /> Backed by our 7-Day Money-Back Guarantee.
-                    </p>
+
                 </div>
             </div>
         </div>

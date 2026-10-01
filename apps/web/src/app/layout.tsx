@@ -26,11 +26,32 @@ export default function RootLayout({
     <html lang="en">
       <body className={`min-h-screen flex flex-col bg-slate-50 text-slate-900`}>
         <Providers>
+          {/* Top Announcement Bar (Swappie / Back Market style) */}
+          <div className="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+            <div className="container mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3 mx-auto sm:mx-0">
+                <span className="flex items-center gap-1.5 font-medium text-slate-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Fresh Canada Batch Landed
+                </span>
+                <span className="hidden md:inline text-slate-600">•</span>
+                <span className="hidden md:inline text-slate-300">50+ Hardware Inspection</span>
+                <span className="hidden lg:inline text-slate-600">•</span>
+                <span className="hidden lg:inline text-slate-300">7-Day Money-Back Guarantee</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-4 text-xs font-medium text-slate-400">
+                <a href="https://wa.me/2349060329221" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+                  <WhatsAppIcon className="w-3.5 h-3.5 fill-current text-emerald-400" /> WhatsApp Concierge: +234 906 032 9221
+                </a>
+              </div>
+            </div>
+          </div>
+
           {/* Header */}
-          <header className="bg-white border-b sticky top-0 z-50">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <header className="bg-white border-b border-slate-200/80 sticky top-0 z-50">
+            <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
               {/* Brand Logo */}
-              <Link href="/" className="flex items-center gap-2.5 group">
+              <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
                 <img 
                   src="/brand/logo.png" 
                   alt="impextech logo" 
@@ -41,24 +62,29 @@ export default function RootLayout({
                 </span>
               </Link>
               
-              {/* Desktop Nav */}
-              <nav className="hidden md:flex gap-8 items-center text-sm font-medium">
-                <Link href="/" className="hover:text-red-600 transition-colors">Home</Link>
-                <Link href="/products" className="hover:text-red-600 transition-colors">Products</Link>
-                <Link href="/request" className="hover:text-red-600 transition-colors">Request a Gadget</Link>
-                <Link href="/about" className="hover:text-red-600 transition-colors">About</Link>
+              {/* Desktop Nav Pills */}
+              <nav className="hidden lg:flex gap-6 items-center text-sm font-semibold text-slate-700">
+                <Link href="/products?category=phones" className="hover:text-red-600 transition-colors">Phones</Link>
+                <Link href="/products?category=laptops" className="hover:text-red-600 transition-colors">Laptops</Link>
+                <Link href="/products?category=headphones" className="hover:text-red-600 transition-colors">Headphones</Link>
+                <Link href="/products?category=smartwatches" className="hover:text-red-600 transition-colors">Smartwatches</Link>
+                <Link href="/products?category=cameras" className="hover:text-red-600 transition-colors">Cameras</Link>
+                <Link href="/products?category=accessories" className="hover:text-red-600 transition-colors">Accessories</Link>
+                <Link href="/request" className="text-red-600 hover:text-red-700 transition-colors font-bold pl-2 border-l border-slate-200">
+                  Request Device
+                </Link>
               </nav>
 
               {/* Actions & Social Badges */}
               <div className="flex items-center gap-3">
                 {/* Social links (Desktop) */}
-                <div className="hidden lg:flex items-center gap-2 border-r border-slate-200 pr-3">
+                <div className="hidden xl:flex items-center gap-2 border-r border-slate-200 pr-3">
                   <a 
                     href="https://x.com/impextech001" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     aria-label="Follow us on X"
-                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                   >
                     <XIcon className="w-4 h-4" />
                   </a>
@@ -67,7 +93,7 @@ export default function RootLayout({
                     target="_blank" 
                     rel="noopener noreferrer" 
                     aria-label="Follow us on Instagram"
-                    className="p-2 text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors"
+                    className="p-2 text-slate-500 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors"
                   >
                     <InstagramIcon className="w-4 h-4" />
                   </a>
@@ -76,7 +102,7 @@ export default function RootLayout({
                     target="_blank" 
                     rel="noopener noreferrer" 
                     aria-label="Chat on WhatsApp"
-                    className="p-2 text-slate-600 hover:text-[#25D366] hover:bg-emerald-50 rounded-full transition-colors"
+                    className="p-2 text-slate-500 hover:text-[#25D366] hover:bg-emerald-50 rounded-full transition-colors"
                   >
                     <WhatsAppIcon className="w-4 h-4 fill-current" />
                   </a>
@@ -86,7 +112,7 @@ export default function RootLayout({
                   <ShoppingCart className="w-5 h-5 text-slate-700" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
                 </Link>
-                <Link href="/products" className="md:hidden p-2 hover:bg-slate-100 rounded-full transition-colors" aria-label="Menu">
+                <Link href="/products" className="lg:hidden p-2 hover:bg-slate-100 rounded-full transition-colors" aria-label="Menu">
                   <Menu className="w-5 h-5" />
                 </Link>
               </div>
