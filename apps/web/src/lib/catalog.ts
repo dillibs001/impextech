@@ -1,4 +1,16 @@
-import { CatalogProduct } from '@/components/home/CategoryProductGrid';
+export interface CatalogProduct {
+    id: string;
+    slug: string;
+    name: string;
+    category: 'Phones' | 'Laptops' | 'Headphones' | 'Smartwatches' | 'Cameras' | 'Accessories';
+    condition: 'Pristine' | 'Excellent' | 'Good';
+    batteryHealth: number;
+    priceNgn: number;
+    retailNgn: number;
+    preview: string;
+    description: string;
+    imeiStatus: string;
+}
 
 export const CATALOG_PRODUCTS: CatalogProduct[] = [
   // PHONES
