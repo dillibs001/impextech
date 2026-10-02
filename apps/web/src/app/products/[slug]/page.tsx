@@ -5,15 +5,15 @@ import {
 } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { notFound } from 'next/navigation';
-import { CATALOG_PRODUCTS } from '@/lib/catalog';
+import { getVendureProductBySlug } from '@/lib/vendure';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { ProductImageCarousel } from '@/components/product/ProductImageCarousel';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
 
-    // Lookup in catalog
-    const product = CATALOG_PRODUCTS.find(p => p.slug === slug);
+    // Lookup live in Vendure (with fallback)
+    const product = await getVendureProductBySlug(slug);
     if (!product) return notFound();
 
     const formatPrice = (val: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(val);

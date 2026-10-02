@@ -7,9 +7,10 @@ import {
 } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { CategoryProductGrid } from '@/components/home/CategoryProductGrid';
-import { CATALOG_PRODUCTS } from '@/lib/catalog';
+import { getVendureProducts } from '@/lib/vendure';
 
-export default function Home() {
+export default async function Home() {
+  const products = await getVendureProducts();
   return (
     <div className="flex flex-col gap-12 sm:gap-16 pb-20 bg-[#FBFBFB] text-[#111111]">
       
@@ -216,7 +217,7 @@ export default function Home() {
 
         {/* Product Grid with Back Market style cards */}
         <Suspense fallback={<div className="py-12 text-center text-sm text-slate-400">Loading Canada inventory...</div>}>
-          <CategoryProductGrid initialProducts={CATALOG_PRODUCTS} />
+          <CategoryProductGrid initialProducts={products} />
         </Suspense>
       </section>
 

@@ -141,6 +141,29 @@ export default function CheckoutPage() {
     setPendingOrder(newOrder);
     setLastOrderId(orderId);
 
+    // Sync order into Vendure backend so it registers in Admin dashboard
+    syncCartToVendure(items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity })))
+      .then(async (orderRes) => {
+        if (orderRes) {
+          await setCustomerForOrder({
+            firstName: form.firstName,
+            lastName: form.lastName,
+            emailAddress: form.email,
+            phoneNumber: form.phone,
+          });
+          await setOrderShippingAddress({
+            fullName: `${form.firstName} ${form.lastName}`,
+            streetLine1: form.address,
+            city: form.cityState,
+            province: form.cityState,
+            countryCode: 'NG',
+          });
+          await setOrderShippingMethod();
+          await transitionOrderToArrangingPayment();
+        }
+      })
+      .catch((e: unknown) => console.warn('Vendure sync for WhatsApp order:', e));
+
     // Open WhatsApp
     const text = buildOrderSummaryText(orderId);
     window.open(

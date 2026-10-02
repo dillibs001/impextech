@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { CategoryProductGrid } from '@/components/home/CategoryProductGrid';
-import { CATALOG_PRODUCTS } from '@/lib/catalog';
+import { getVendureProducts } from '@/lib/vendure';
 import { ShieldCheck, BatteryCharging, RotateCcw, Award } from 'lucide-react';
 
 export default async function ProductsPage({ 
@@ -11,6 +11,7 @@ export default async function ProductsPage({
     const params = await searchParams;
     const category = params.category;
     const q = params.q;
+    const products = await getVendureProducts();
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -46,7 +47,7 @@ export default async function ProductsPage({
             {/* Filterable Products Grid wrapped in Suspense */}
             <Suspense fallback={<div className="py-12 text-center text-sm text-slate-400">Loading Canada inventory...</div>}>
                 <CategoryProductGrid 
-                    initialProducts={CATALOG_PRODUCTS} 
+                    initialProducts={products} 
                     initialCategory={category}
                     searchQuery={q}
                 />
