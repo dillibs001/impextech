@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { 
   Smartphone, Laptop, Headphones, Watch, Camera, Plug, 
@@ -214,7 +215,9 @@ export default function Home() {
         </div>
 
         {/* Product Grid with Back Market style cards */}
-        <CategoryProductGrid initialProducts={CATALOG_PRODUCTS} />
+        <Suspense fallback={<div className="py-12 text-center text-sm text-slate-400">Loading Canada inventory...</div>}>
+          <CategoryProductGrid initialProducts={CATALOG_PRODUCTS} />
+        </Suspense>
       </section>
 
       {/* 4. BACK MARKET 50+ TECHNICAL CHECKPOINTS (Direct Trust Language) */}

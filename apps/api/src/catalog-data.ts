@@ -8,6 +8,7 @@ export interface CatalogProduct {
     priceNgn: number;
     retailNgn: number;
     preview: string;
+    images?: string[];
     description: string;
     imeiStatus: string;
 }
@@ -24,6 +25,12 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 1250000,
     retailNgn: 1600000,
     preview: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1591337676887-a217a6970a8a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Canada-sourced iPhone 15 Pro Max in Natural Titanium. Grade A+ Pristine condition with 99% Battery Health. Powered by the A17 Pro chip, aerospace-grade titanium frame, and 5x optical zoom camera. Factory unlocked with verified clean IMEI.',
     imeiStatus: 'Clean & Verified',
   },
@@ -37,6 +44,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 840000,
     retailNgn: 1100000,
     preview: 'https://images.unsplash.com/photo-1663499482523-1c0c1bae4ce1?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1663499482523-1c0c1bae4ce1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Canada-sourced iPhone 14 Pro in Space Black. Features Dynamic Island, 48MP Pro camera system, and Always-On display. 95% Battery Health, 100% genuine Apple components with 7-day guarantee.',
     imeiStatus: 'Clean & Verified',
   },
@@ -50,6 +62,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 520000,
     retailNgn: 680000,
     preview: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Direct Canada import iPhone 13. Super Retina XDR OLED display, A15 Bionic, Cinematic mode. Tested and verified 92% battery health, completely clean global IMEI, unlocked for all Nigerian networks.',
     imeiStatus: 'Clean & Verified',
   },
@@ -63,6 +80,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 820000,
     retailNgn: 1150000,
     preview: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Canada-sourced Galaxy S23 Ultra. Built-in S Pen, 200MP camera sensor, 100x Space Zoom, Snapdragon 8 Gen 2 for Galaxy. Battery health tested at 96%. Pristine grade with zero scratches.',
     imeiStatus: 'Clean & Verified',
   },
@@ -76,6 +98,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 690000,
     retailNgn: 920000,
     preview: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Directly imported from Canada. Google Tensor G3, legendary computational photography, Best Take, Magic Audio Eraser, 120Hz Super Actua display. 98% battery health and unlocked for all carriers.',
     imeiStatus: 'Clean & Verified',
   },
@@ -91,6 +118,12 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 1750000,
     retailNgn: 2400000,
     preview: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Canada corporate off-lease unit in mint condition. Apple M2 Pro (10-core CPU, 16-core GPU), 16GB unified memory, 512GB SSD, Liquid Retina XDR 120Hz ProMotion display. Battery cycle count: only 34 cycles (97% health). Includes MagSafe 3 charger.',
     imeiStatus: 'Clean Serial',
   },
@@ -104,6 +137,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 980000,
     retailNgn: 1350000,
     preview: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Direct Canada import MacBook Air M2 in sought-after Midnight color. Redesigned flat chassis, 13.6-inch Liquid Retina display, MagSafe charging, 1080p FaceTime HD camera. Ultra-low battery cycles (18 cycles, 98% health).',
     imeiStatus: 'Clean Serial',
   },
@@ -117,6 +155,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 640000,
     retailNgn: 880000,
     preview: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'The best value developer & student laptop in Nigeria. Apple M1 silicon, silent fanless thermal design, all-day battery life (93% health, 48 cycles). Fully tested keyboard, trackpad, and Retina display.',
     imeiStatus: 'Clean Serial',
   },
@@ -130,6 +173,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 1150000,
     retailNgn: 1650000,
     preview: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'High-performance creative workstation imported from Canada. Intel Core i7-12700H, NVIDIA RTX 3050 graphics, 16GB DDR5, 3.5K OLED InfinityEdge touch screen. CNC machined aluminum & carbon fiber palm rest.',
     imeiStatus: 'Clean Service Tag',
   },
@@ -145,6 +193,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 480000,
     retailNgn: 650000,
     preview: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Pristine Canada-tested AirPods Max. Custom acoustic design, high-fidelity audio, active noise cancellation with Transparency mode, personalized spatial audio with dynamic head tracking. Earpads sanitized and pristine.',
     imeiStatus: 'Verified Serial',
   },
@@ -158,6 +211,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 220000,
     retailNgn: 310000,
     preview: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Up to 2x more Active Noise Cancellation, Adaptive Audio, and USB-C MagSafe Charging Case with built-in speaker and lanyard loop. Battery 100% capacity with verified serial number.',
     imeiStatus: 'Verified Serial',
   },
@@ -171,6 +229,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 340000,
     retailNgn: 460000,
     preview: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Industry-leading noise cancellation powered by dual processors and 8 microphones. Auto NC Optimizer, exceptional call quality, 30-hour battery life. Canada verified unit with original travel case.',
     imeiStatus: 'Verified Serial',
   },
@@ -186,6 +249,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 750000,
     retailNgn: 1050000,
     preview: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Rugged 49mm aerospace-grade titanium case, precision dual-frequency GPS, up to 36 hours of battery life (100% battery health). Cellular + GPS unlocked for Nigeria. Bright 3000 nits display.',
     imeiStatus: 'Clean EID/IMEI',
   },
@@ -199,6 +267,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 380000,
     retailNgn: 520000,
     preview: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'S9 SiP chip with Double Tap gesture, brighter display, on-device Siri, and Precision Finding for iPhone. Battery health 99%, completely clean screen and casing.',
     imeiStatus: 'Verified Serial',
   },
@@ -212,6 +285,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 260000,
     retailNgn: 360000,
     preview: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Iconic rotating bezel, sapphire crystal glass, advanced sleep coaching, BIA body composition analysis. Tested 97% battery health with original magnetic link strap.',
     imeiStatus: 'Verified Serial',
   },
@@ -227,6 +305,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 1450000,
     retailNgn: 1950000,
     preview: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Canada-sourced Sony A7 III with FE 28-70mm f/3.5-5.6 OSS kit lens. 24.2MP Exmor R CMOS full-frame sensor, 4K HDR video, 5-axis optical image stabilization. Shutter count verified under 4,200 actuations. Sensor 100% clean.',
     imeiStatus: 'Clean Serial',
   },
@@ -240,6 +323,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 1680000,
     retailNgn: 2250000,
     preview: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'High-speed sports, wedding, and low-light creator camera imported from Canada. 20.1MP full-frame CMOS sensor, up to 20 fps electronic shutter, 4K60p 10-bit internal recording, Dual Pixel CMOS AF II. Shutter count under 6,800. Pristine sensor.',
     imeiStatus: 'Clean Serial',
   },
@@ -255,6 +343,10 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 32000,
     retailNgn: 45000,
     preview: 'https://images.unsplash.com/photo-1622445262464-84b14e32452e?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1622445262464-84b14e32452e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Genuine Canada-sourced Apple 20W Power Adapter with official Apple 1m Braided USB-C to USB-C / Lightning Cable. Fast charge iPhone from 0 to 50% in 30 minutes.',
     imeiStatus: 'Original Apple Serial',
   },
@@ -268,6 +360,10 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 65000,
     retailNgn: 95000,
     preview: 'https://images.unsplash.com/photo-1609592424367-279c13b28b7b?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1609592424367-279c13b28b7b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1622445262464-84b14e32452e?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Snaps on with perfectly aligned magnets for safe, reliable wireless charging on iPhone 12, 13, 14, and 15 series. Charge on the go without cables. Battery health tested at 97%.',
     imeiStatus: 'Verified Serial',
   },
@@ -281,6 +377,10 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceNgn: 48000,
     retailNgn: 68000,
     preview: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1622445262464-84b14e32452e?auto=format&fit=crop&w=800&q=80',
+    ],
     description: 'Power up your MacBook, iPhone, and Apple Watch simultaneously from one tiny wall plug. GaNPrime technology with intelligent power allocation and ActiveShield temperature protection.',
     imeiStatus: 'Verified Serial',
   }

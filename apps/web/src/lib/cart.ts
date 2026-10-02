@@ -45,10 +45,10 @@ export async function getActiveOrder() {
     const query = `
         query {
             activeOrder {
-                id code totalWithTax
+                id code state totalWithTax
                 lines {
                     id quantity linePriceWithTax
-                    productVariant { name }
+                    productVariant { id name sku price priceWithTax }
                     featuredAsset { preview }
                 }
             }
@@ -63,7 +63,7 @@ export async function addToCart(productVariantId: string, quantity: number = 1) 
         mutation AddItem($productVariantId: ID!, $quantity: Int!) {
             addItemToOrder(productVariantId: $productVariantId, quantity: $quantity) {
                 ... on Order {
-                    id code totalWithTax
+                    id code state totalWithTax
                 }
                 ... on ErrorResult {
                     errorCode message
@@ -75,22 +75,39 @@ export async function addToCart(productVariantId: string, quantity: number = 1) 
     return data?.addItemToOrder;
 }
 
-// Look up a Vendure ProductVariant by its SKU (which matches our catalog slug)
-export async function findVariantBySku(sku: string): Promise<{ id: string; price: number } | null> {
+// Look up a Vendure ProductVariant by product slug
+export async function findVariantBySlug(slug: string): Promise<{ id: string; price: number } | null> {
   const query = `
-    query FindVariant($sku: String!) {
-      search(input: { term: $sku, take: 1 }) {
-        items { productVariantId sku price { ... on SinglePrice { value } } }
+    query GetProductBySlug($slug: String!) {
+      product(slug: $slug) {
+        id
+        name
+        variants {
+          id
+          sku
+          price
+          priceWithTax
+        }
       }
     }
   `;
-  const data = await vendureFetch(query, { sku });
-  const item = data?.search?.items?.[0];
-  if (item && item.sku === sku) {
-    return { id: item.productVariantId, price: item.price?.value || 0 };
+  try {
+    const data = await vendureFetch(query, { slug });
+    const variants = data?.product?.variants;
+    if (variants && variants.length > 0) {
+      const v = variants[0];
+      return { 
+        id: String(v.id), 
+        price: v.priceWithTax || v.price || 0 
+      };
+    }
+  } catch (e) {
+    console.error('Error fetching variant for slug:', slug, e);
   }
   return null;
 }
+
+export const findVariantBySku = findVariantBySlug;
 
 // Sync the entire localStorage cart to Vendure at checkout time
 export async function syncCartToVendure(items: Array<{ slug: string; quantity: number }>): Promise<{
@@ -98,26 +115,30 @@ export async function syncCartToVendure(items: Array<{ slug: string; quantity: n
   orderCode: string;
   totalWithTax: number;
 } | null> {
-  let orderData = null;
-  for (const item of items) {
-    const variant = await findVariantBySku(item.slug);
-    if (variant) {
-      orderData = await addToCart(variant.id, item.quantity);
-      if (orderData?.errorCode) {
-        console.error('Error adding to cart:', orderData.message);
+  try {
+    for (const item of items) {
+      const variant = await findVariantBySlug(item.slug);
+      if (variant) {
+        const orderData = await addToCart(variant.id, item.quantity);
+        if (orderData?.errorCode) {
+          console.error('Error adding to cart:', orderData.message);
+        }
+      } else {
+        console.warn('Could not find variant for slug:', item.slug);
       }
     }
+    
+    const order = await getActiveOrder();
+    if (order?.id) {
+      return {
+        orderId: order.id,
+        orderCode: order.code,
+        totalWithTax: order.totalWithTax
+      };
+    }
+  } catch (err) {
+    console.error('Error syncing cart to Vendure:', err);
   }
-  
-  const order = await getActiveOrder();
-  if (order) {
-    return {
-      orderId: order.id,
-      orderCode: order.code,
-      totalWithTax: order.totalWithTax
-    };
-  }
-  
   return null;
 }
 
@@ -174,7 +195,7 @@ export async function getEligibleShippingMethods(): Promise<Array<{ id: string; 
 // Set shipping method on the active order
 export async function setOrderShippingMethod(): Promise<boolean> {
   const methods = await getEligibleShippingMethods();
-  if (!methods || methods.length === 0) return false;
+  const shippingId = methods && methods.length > 0 ? methods[0].id : '1';
   
   const query = `
     mutation SetShipping($id: [ID!]!) {
@@ -184,13 +205,17 @@ export async function setOrderShippingMethod(): Promise<boolean> {
       }
     }
   `;
-  // use the first method available
-  const data = await vendureFetch(query, { id: [methods[0].id] });
+  const data = await vendureFetch(query, { id: [shippingId] });
   return !!data?.setOrderShippingMethod?.id;
 }
 
 // Transition order to ArrangingPayment state
 export async function transitionOrderToArrangingPayment(): Promise<boolean> {
+  const active = await getActiveOrder();
+  if (active?.state === 'ArrangingPayment') {
+    return true;
+  }
+
   const query = `
     mutation Transition($state: String!) {
       transitionOrderToState(state: $state) {

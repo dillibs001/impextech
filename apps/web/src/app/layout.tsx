@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/components/Providers';
 import Link from 'next/link';
-import { ShoppingCart, Search, Menu, Heart, HelpCircle, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Search, Menu, Heart, HelpCircle, ShieldCheck, Package } from 'lucide-react';
 import { SearchBar } from '@/components/search/SearchBar';
 import { InstagramIcon } from '@/components/icons/InstagramIcon';
 import { XIcon } from '@/components/icons/XIcon';
@@ -91,6 +91,14 @@ export default function RootLayout({
                 >
                   <HelpCircle className="w-4 h-4 text-red-600" />
                   <span>Request Custom Device</span>
+                </Link>
+
+                <Link 
+                  href="/orders" 
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#111111] hover:text-red-600 transition-colors px-3 py-1.5 rounded-full hover:bg-slate-100"
+                >
+                  <Package className="w-4 h-4 text-slate-700" />
+                  <span>My Orders</span>
                 </Link>
 
                 <div className="hidden xl:flex items-center gap-1.5 border-l border-slate-200 pl-3">

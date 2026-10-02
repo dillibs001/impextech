@@ -7,6 +7,7 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { notFound } from 'next/navigation';
 import { CATALOG_PRODUCTS } from '@/lib/catalog';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import { ProductImageCarousel } from '@/components/product/ProductImageCarousel';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -34,28 +35,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     
                     {/* Left Column: Visuals & Inspection Report (Back Market style) */}
                     <div className="lg:w-1/2 flex flex-col gap-6">
-                        {/* Image Showcase */}
-                        <div className="relative aspect-square rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-8 overflow-hidden group">
-                            <img 
-                                src={product.preview} 
-                                alt={product.name} 
-                                className="max-h-[380px] w-full object-contain group-hover:scale-105 transition-transform duration-300" 
-                            />
-                            
-                            {/* Badges on preview */}
-                            <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-                                <span className="bg-[#2B2E35] text-white text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-                                    Grade: {product.condition}
-                                </span>
-                                <span className="bg-red-50 text-red-600 border border-red-100 text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                                    <Award className="w-3.5 h-3.5" /> Canada Certified
-                                </span>
-                            </div>
-
-                            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-slate-200 px-3 py-1 rounded-full text-xs font-semibold text-emerald-700 flex items-center gap-1 shadow-sm">
-                                <BatteryCharging className="w-4 h-4 text-emerald-600" /> {product.batteryHealth}% Battery Health
-                            </div>
-                        </div>
+                        {/* Image Showcase Carousel */}
+                        <ProductImageCarousel
+                            images={product.images && product.images.length > 0 ? product.images : [product.preview]}
+                            name={product.name}
+                            condition={product.condition}
+                            batteryHealth={product.batteryHealth}
+                        />
 
                         {/* 50-Point Technical Diagnostic Check (Back Market Signature) */}
                         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/80">

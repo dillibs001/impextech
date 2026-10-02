@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Suspense } from 'react';
 import { CategoryProductGrid } from '@/components/home/CategoryProductGrid';
 import { CATALOG_PRODUCTS } from '@/lib/catalog';
 import { ShieldCheck, BatteryCharging, RotateCcw, Award } from 'lucide-react';
@@ -43,12 +43,14 @@ export default async function ProductsPage({
                 </div>
             </div>
 
-            {/* Filterable Products Grid */}
-            <CategoryProductGrid 
-                initialProducts={CATALOG_PRODUCTS} 
-                initialCategory={category}
-                searchQuery={q}
-            />
+            {/* Filterable Products Grid wrapped in Suspense */}
+            <Suspense fallback={<div className="py-12 text-center text-sm text-slate-400">Loading Canada inventory...</div>}>
+                <CategoryProductGrid 
+                    initialProducts={CATALOG_PRODUCTS} 
+                    initialCategory={category}
+                    searchQuery={q}
+                />
+            </Suspense>
         </div>
     );
 }
