@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCustomerOrders, CustomerOrder } from '@/lib/orders';
 import { Package, Clock, ShieldCheck, ArrowLeft, ExternalLink, BatteryCharging } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
+import { ShippingTrackerTimeline } from '@/components/orders/ShippingTrackerTimeline';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
@@ -180,6 +181,9 @@ export default function OrdersPage() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Canada-to-Nigeria Visual Shipping Tracker */}
+                  <ShippingTrackerTimeline order={order} />
                 </div>
               );
             })}

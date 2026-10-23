@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # The PostgreSQL Database
+  # 1. PostgreSQL Database for Vendure
   postgres:
     image: postgres:15-alpine
-    container_name: impex-db
+    container_name: impextech-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: impextech
@@ -13,30 +13,62 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U impextech -d vendure"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # The Monorepo (Next.js Frontend + Vendure Backend)
-  impex-platform:
-    image: node:24-alpine
-    container_name: impex-apps
+  # 2. Vendure Backend API & Worker
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: impextech-api
     restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - .:/app
-    # Automatically enables pnpm, installs dependencies, builds, and starts both apps
-    command: sh -c "corepack enable pnpm && pnpm install && pnpm run build && pnpm run start"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgres://impextech:ImpexTechSecurePassword123!@postgres:5432/vendure
+      - PORT=3001
+      - DB_SYNCHRONIZE=true
+      - DATABASE_URL=postgres://${POSTGRES_USER:-impextech}:${POSTGRES_PASSWORD:-ImpexTechSecurePassword123!}@postgres:5432/${POSTGRES_DB:-vendure}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - SUPERADMIN_USERNAME=${SUPERADMIN_USERNAME:-superadmin}
+      - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/shop-api
+      - SMTP_HOST=${SMTP_HOST:-smtp.resend.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-resend}
+      - SMTP_PASS=${SMTP_PASS}
+      - EMAIL_FROM=${EMAIL_FROM:-"impextech" <onboarding@resend.dev>}
+    volumes:
+      - vendure_assets:/app/apps/api/static/assets
     ports:
-      - "3000:3000" # Next.js Storefront
-      - "3001:3001" # Vendure Shop & Admin API
-      - "3002:3002" # Vendure Admin UI
+      - "3001:3001"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
+  # 3. Next.js Web Storefront
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: impextech-web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - INTERNAL_API_URL=http://api:3001/shop-api
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/shop-api
+      - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
+  vendure_assets:

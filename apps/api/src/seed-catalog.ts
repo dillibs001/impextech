@@ -70,10 +70,72 @@ const CREATE_PAYMENT_METHOD = `
   }
 `;
 
-const GET_TAX_CATEGORIES = `
-  query GetTaxCategories {
-    taxCategories {
+const GET_COUNTRIES = `
+  query GetCountries {
+    countries {
+      items { id code name }
+    }
+  }
+`;
+
+const CREATE_COUNTRY = `
+  mutation CreateCountry($input: CreateCountryInput!) {
+    createCountry(input: $input) {
+      id code name
+    }
+  }
+`;
+
+const GET_ZONES = `
+  query GetZones {
+    zones {
       items { id name }
+    }
+  }
+`;
+
+const CREATE_ZONE = `
+  mutation CreateZone($input: CreateZoneInput!) {
+    createZone(input: $input) {
+      id name
+    }
+  }
+`;
+
+const GET_TAX_RATES = `
+  query GetTaxRates {
+    taxRates {
+      items { id name }
+    }
+  }
+`;
+
+const CREATE_TAX_RATE = `
+  mutation CreateTaxRate($input: CreateTaxRateInput!) {
+    createTaxRate(input: $input) {
+      id name
+    }
+  }
+`;
+
+const GET_ACTIVE_CHANNEL = `
+  query GetActiveChannel {
+    activeChannel {
+      id
+      defaultTaxZone { id name }
+      defaultShippingZone { id name }
+    }
+  }
+`;
+
+const UPDATE_CHANNEL = `
+  mutation UpdateChannel($input: UpdateChannelInput!) {
+    updateChannel(input: $input) {
+      ... on Channel {
+        id
+        defaultTaxZone { id name }
+        defaultShippingZone { id name }
+      }
     }
   }
 `;
@@ -131,7 +193,12 @@ async function seed() {
     const authRes = await axios.post(ADMIN_API, {
       query: AUTH_MUTATION,
       variables: {
-        input: { native: { username: 'superadmin', password: 'superadmin' } }
+        input: {
+          native: {
+            username: process.env.SUPERADMIN_USERNAME || 'superadmin',
+            password: process.env.SUPERADMIN_PASSWORD || 'ImpexTechAdmin2026!'
+          }
+        }
       }
     });
 
@@ -159,8 +226,36 @@ async function seed() {
       return res.data.data as T;
     };
 
-    // 1. Tax Category
-    const taxCategories = await request<{ taxCategories: { items: TaxCategoryItem[] } }>(GET_TAX_CATEGORIES);
+    // 1. Ensure Country (Nigeria)
+    const cRes = await request<{ countries: { items: Array<{ id: string; code: string }> } }>(GET_COUNTRIES);
+    let countryId = cRes.countries.items.find(c => c.code === 'NG')?.id;
+    if (!countryId) {
+      const createC = await request<{ createCountry: { id: string } }>(CREATE_COUNTRY, {
+        input: { code: 'NG', enabled: true, translations: [{ languageCode: 'en', name: 'Nigeria' }] }
+      });
+      countryId = createC.createCountry.id;
+      console.log('Created Country: Nigeria');
+    }
+
+    // 2. Ensure Zone (Nigeria)
+    const zRes = await request<{ zones: { items: Array<{ id: string; name: string }> } }>(GET_ZONES);
+    let zoneId = zRes.zones.items.find(z => z.name === 'Nigeria')?.id;
+    if (!zoneId) {
+      const createZ = await request<{ createZone: { id: string } }>(CREATE_ZONE, {
+        input: { name: 'Nigeria', memberIds: [countryId] }
+      });
+      zoneId = createZ.createZone.id;
+      console.log('Created Zone: Nigeria');
+    }
+
+    // 3. Tax Category
+    const taxCategories = await request<{ taxCategories: { items: TaxCategoryItem[] } }>(`
+      query GetTaxCategories {
+        taxCategories {
+          items { id name }
+        }
+      }
+    `);
     let taxCategoryId = taxCategories.taxCategories.items.find(tc => tc.name === 'Standard')?.id;
     if (!taxCategoryId) {
       const tcRes = await request<{ createTaxCategory: { id: string } }>(CREATE_TAX_CATEGORY, {
@@ -168,6 +263,24 @@ async function seed() {
       });
       taxCategoryId = tcRes.createTaxCategory.id;
       console.log('Created Standard Tax Category');
+    }
+
+    // 4. Tax Rate
+    const trRes = await request<{ taxRates: { items: Array<{ id: string; name: string }> } }>(GET_TAX_RATES);
+    if (trRes.taxRates.items.length === 0) {
+      await request(CREATE_TAX_RATE, {
+        input: { name: 'Standard Tax', enabled: true, value: 0, categoryId: taxCategoryId, zoneId }
+      });
+      console.log('Created Standard Tax Rate');
+    }
+
+    // 5. Update Channel Default Zones
+    const chRes = await request<{ activeChannel: { id: string; defaultTaxZone: { id: string } | null } }>(GET_ACTIVE_CHANNEL);
+    if (!chRes.activeChannel.defaultTaxZone) {
+      await request(UPDATE_CHANNEL, {
+        input: { id: chRes.activeChannel.id, defaultTaxZoneId: zoneId, defaultShippingZoneId: zoneId }
+      });
+      console.log('Updated Active Channel with Default Zones');
     }
 
     // 2. Shipping Method

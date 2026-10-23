@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { getVendureProductBySlug } from '@/lib/vendure';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { ProductImageCarousel } from '@/components/product/ProductImageCarousel';
+import { InspectionVideoModal } from '@/components/product/InspectionVideoModal';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -125,9 +126,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                             </div>
 
                             {/* Description */}
-                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
                                 {product.description}
                             </p>
+
+                            {/* Inspection Video & Hardware Audit Modal */}
+                            <InspectionVideoModal product={product} />
                         </div>
 
                         {/* Conversion CTAs */}

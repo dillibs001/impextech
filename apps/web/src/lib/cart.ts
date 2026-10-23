@@ -1,11 +1,11 @@
 'use server';
 
 import { cookies } from 'next/headers';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api';
+import { getApiUrl } from './api-url';
 
 // Helper to pass cookies to Vendure to maintain the Cart session
 async function vendureFetch(query: string, variables: Record<string, unknown> = {}) {
+    const API_URL = getApiUrl();
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('vendure-auth-token');
     

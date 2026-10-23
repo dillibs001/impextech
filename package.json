@@ -9,20 +9,16 @@
     "dev:web": "pnpm --filter @impextech/web dev",
     "build": "pnpm -r run build",
     "build:api": "pnpm --filter @impextech/api build",
-    "build:web": "pnpm --filter @impextech/web build"
+    "build:web": "pnpm --filter @impextech/web build",
+    "test": "apps/api/node_modules/.bin/ts-node apps/api/test/paystack.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/catalog.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/auth.spec.ts",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@apollo/protobufjs",
-      "bcrypt",
-      "better-sqlite3",
-      "sharp"
-    ]
-  },
+  "packageManager": "pnpm@9.15.4",
   "dependencies": {
     "sqlite3": "^6.0.1"
   }

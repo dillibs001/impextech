@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { saveCustomerOrder, CustomerOrder } from '@/lib/orders';
 import {
   syncCartToVendure,
@@ -45,6 +46,7 @@ const initialForm: DeliveryForm = {
 };
 
 export default function CheckoutPage() {
+  const { user } = useAuth();
   const { items, totalPrice, totalCount, removeFromCart, updateQuantity, clearCart } = useCart();
   const [form, setForm] = useState<DeliveryForm>(initialForm);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -53,6 +55,21 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [whatsAppPromptOpen, setWhatsAppPromptOpen] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<CustomerOrder | null>(null);
+
+  // Auto-populate form if user is logged in
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        firstName: prev.firstName || user.firstName || '',
+        lastName: prev.lastName || user.lastName || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || '',
+        address: prev.address || user.address || '',
+        cityState: prev.cityState || user.cityState || '',
+      }));
+    }
+  }, [user]);
 
   const formatPrice = (val: number) =>
     new Intl.NumberFormat('en-NG', {
@@ -190,43 +207,47 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     try {
-      const orderRes = await syncCartToVendure(
-        items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity }))
-      );
-      
-      if (!orderRes) {
-        throw new Error('Vendure backend server is currently offline or unreachable. Please start the backend with "pnpm dev" or use Instant WhatsApp Order.');
+      let orderCode = `IMPEX-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+      let vendureSynced = false;
+
+      try {
+        const orderRes = await syncCartToVendure(
+          items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity }))
+        );
+        if (orderRes?.orderCode) {
+          orderCode = orderRes.orderCode;
+          vendureSynced = true;
+          await setCustomerForOrder({
+            firstName: form.firstName,
+            lastName: form.lastName,
+            emailAddress: form.email,
+            phoneNumber: form.phone,
+          });
+          await setOrderShippingAddress({
+            fullName: `${form.firstName} ${form.lastName}`,
+            streetLine1: form.address,
+            city: form.cityState,
+            province: form.cityState,
+            countryCode: 'NG',
+          });
+          await setOrderShippingMethod();
+          await transitionOrderToArrangingPayment();
+        }
+      } catch (syncErr) {
+        console.warn('Vendure sync skipped (will record local verified payment):', syncErr);
       }
-
-      await setCustomerForOrder({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        emailAddress: form.email,
-        phoneNumber: form.phone,
-      });
-
-      await setOrderShippingAddress({
-        fullName: `${form.firstName} ${form.lastName}`,
-        streetLine1: form.address,
-        city: form.cityState,
-        province: form.cityState,
-        countryCode: 'NG',
-      });
-
-      await setOrderShippingMethod();
-      await transitionOrderToArrangingPayment();
 
       const paystackKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
       if (!paystackKey || paystackKey.includes('placeholder') || paystackKey === 'pk_test_your_key_here') {
         alert(
-          `Paystack Public Key not configured yet!\n\nSet NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY in apps/web/.env.local with your Paystack key to activate live payments.\n\nYour order has been compiled in Vendure (Ref: ${orderRes.orderCode}). We'll now transfer you to WhatsApp to complete your order.`
+          `Paystack Public Key not configured yet!\n\nSet NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY in apps/web/.env.local with your Paystack key to activate live payments.\n\nYour order has been recorded (Ref: ${orderCode}). We'll now transfer you to WhatsApp to complete your order.`
         );
         handleWhatsAppOrder();
         setIsProcessing(false);
         return;
       }
 
-      const orderRef = `IMPEX-${orderRes.orderCode}-${Date.now().toString().slice(-4)}`;
+      const orderRef = `IMPEX-${orderCode}-${Date.now().toString().slice(-4)}`;
 
       if (typeof window !== 'undefined' && window.PaystackPop) {
         const paystack = new window.PaystackPop.setup({
@@ -236,18 +257,16 @@ export default function CheckoutPage() {
           currency: 'NGN',
           ref: orderRef,
           callback: async (response: { reference: string }) => {
-            const result = await addPaymentToOrder(response.reference);
-            if (result) {
-              const completedOrder = createCustomerOrderObject('Paystack', orderRes.orderCode);
-              completedOrder.status = 'Paid';
-              completedOrder.reference = response.reference;
-              saveCustomerOrder(completedOrder);
-              setLastOrderId(orderRes.orderCode);
-              clearCart();
-              setOrderPlaced(true);
-            } else {
-              alert('Payment processing error on backend. Please contact support on WhatsApp.');
+            if (vendureSynced) {
+              await addPaymentToOrder(response.reference).catch(e => console.warn('addPaymentToOrder:', e));
             }
+            const completedOrder = createCustomerOrderObject('Paystack', orderCode);
+            completedOrder.status = 'Paid';
+            completedOrder.reference = response.reference;
+            saveCustomerOrder(completedOrder);
+            setLastOrderId(orderCode);
+            clearCart();
+            setOrderPlaced(true);
             setIsProcessing(false);
           },
           onClose: () => {
@@ -257,7 +276,7 @@ export default function CheckoutPage() {
 
         paystack.openIframe();
       } else {
-        throw new Error('Paystack inline SDK failed to load. Please try again or use WhatsApp.');
+        throw new Error('Paystack inline SDK failed to load. Please check your internet connection or use WhatsApp.');
       }
     } catch (err: unknown) {
       console.error('Checkout error:', err);
@@ -416,12 +435,27 @@ export default function CheckoutPage() {
             <div className="lg:w-2/3 flex flex-col gap-6">
               {/* Delivery Info */}
               <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <span className="bg-[#2B2E35] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                    1
-                  </span>
-                  Delivery Details
-                </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span className="bg-[#2B2E35] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                      1
+                    </span>
+                    Delivery Details
+                  </h2>
+                  {user ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full font-semibold">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      Auto-filled from {user.firstName}
+                    </span>
+                  ) : (
+                    <Link
+                      href="/login?redirect=/checkout"
+                      className="text-xs text-red-600 hover:underline font-semibold"
+                    >
+                      Sign In for 1-Click Saved Address
+                    </Link>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <input

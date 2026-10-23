@@ -26,8 +26,9 @@ export const paystackPaymentHandler = new PaymentMethodHandler({
             }
             
             // Server Verification Rule: Cross-check charge.success
+            const secretKey = args.secretKey || process.env.PAYSTACK_SECRET_KEY;
             const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-                headers: { Authorization: `Bearer ${args.secretKey}` }
+                headers: { Authorization: `Bearer ${secretKey}` }
             });
 
             const data = response.data.data;
@@ -76,11 +77,12 @@ export const paystackPaymentHandler = new PaymentMethodHandler({
     createRefund: async (ctx, input, amount, order, payment, args) => {
         try {
             // Server-to-Server Automated Refund
+            const secretKey = args.secretKey || process.env.PAYSTACK_SECRET_KEY;
             const response = await axios.post('https://api.paystack.co/refund', {
                 transaction: payment.transactionId,
                 amount: amount // Must be in minor units (Kobo)
             }, {
-                headers: { Authorization: `Bearer ${args.secretKey}` }
+                headers: { Authorization: `Bearer ${secretKey}` }
             });
 
             if (response.data.status === true) {

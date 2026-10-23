@@ -8,6 +8,8 @@
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "seed": "ts-node src/seed-catalog.ts",
+    "seed:prod": "node dist/seed-catalog.js",
+    "test": "ts-node test/paystack.spec.ts",
     "start:prod": "node dist/index.js",
     "dev": "ts-node src/index.ts"
   },
@@ -26,20 +28,15 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "graphql": "^16.11.0",
+    "pg": "^8.13.1",
     "sqlite3": "^6.0.1",
     "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@apollo/protobufjs",
-      "bcrypt",
-      "better-sqlite3",
-      "sharp"
-    ]
   }
 }
+

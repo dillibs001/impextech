@@ -1,4 +1,5 @@
 import { CATALOG_PRODUCTS, CatalogProduct } from './catalog';
+import { getApiUrl } from './api-url';
 
 export interface ProductSearchItem {
     productId: string;
@@ -49,7 +50,7 @@ interface VendureProduct {
 }
 
 export async function queryVendure<T = unknown>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api';
+    const apiUrl = getApiUrl();
     
     const res = await fetch(apiUrl, {
         method: 'POST',
