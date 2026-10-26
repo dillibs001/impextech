@@ -9,7 +9,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const client = new ApolloClient({
   link: new HttpLink({
-    uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api',
+    uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/shop-api',
   }),
   cache: new InMemoryCache(),
 });

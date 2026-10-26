@@ -29,13 +29,13 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=4001
       - DB_SYNCHRONIZE=true
       - DATABASE_URL=postgres://${POSTGRES_USER:-impextech}:${POSTGRES_PASSWORD:-ImpexTechSecurePassword123!}@postgres:5432/${POSTGRES_DB:-vendure}
       - COOKIE_SECRET=${COOKIE_SECRET}
       - SUPERADMIN_USERNAME=${SUPERADMIN_USERNAME:-superadmin}
       - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4000}
       - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
       - SMTP_HOST=${SMTP_HOST:-smtp.resend.com}
       - SMTP_PORT=${SMTP_PORT:-587}
@@ -45,7 +45,7 @@ services:
     volumes:
       - vendure_assets:/app/apps/api/static/assets
     ports:
-      - "3001:3001"
+      - "4001:4001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,13 +59,13 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - INTERNAL_API_URL=http://api:3001/shop-api
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/shop-api
+      - PORT=4000
+      - INTERNAL_API_URL=http://api:4001/shop-api
+      - NEXT_PUBLIC_API_URL=http://localhost:4001/shop-api
       - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     ports:
-      - "3000:3000"
+      - "4000:4000"
     depends_on:
       - api
 

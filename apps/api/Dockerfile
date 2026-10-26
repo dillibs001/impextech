@@ -28,7 +28,7 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=4001
 
 # Copy compiled artifacts and production dependencies
 COPY --from=builder /app/node_modules ./node_modules
@@ -39,6 +39,6 @@ COPY --from=builder /app/apps/api/static ./apps/api/static
 
 WORKDIR /app/apps/api
 
-EXPOSE 3001
+EXPOSE 4001
 
 CMD ["node", "dist/index.js"]

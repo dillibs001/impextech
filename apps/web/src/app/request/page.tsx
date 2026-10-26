@@ -72,7 +72,7 @@ export default function RequestBoardPage() {
     `;
 
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/shop-api', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/shop-api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, variables: { input } }),

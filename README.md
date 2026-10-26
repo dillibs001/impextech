@@ -55,8 +55,8 @@ graph TD
     Admin["Store Admin / Operations"]
 
     subgraph "Docker Network (impextech-network)"
-        Web["Frontend: apps/web (Next.js 16 Standalone)<br/>Port: 3000"]
-        API["Backend: apps/api (Vendure v3.7 / NestJS)<br/>Port: 3001"]
+        Web["Frontend: apps/web (Next.js 16 Standalone)<br/>Port: 4000"]
+        API["Backend: apps/api (Vendure v3.7 / NestJS)<br/>Port: 4001"]
         DB[("Database: PostgreSQL 15 Alpine<br/>Port: 5432")]
     end
 
@@ -119,7 +119,7 @@ impextech/
 
 Create `apps/web/.env.local`:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/shop-api
+NEXT_PUBLIC_API_URL=http://localhost:4001/shop-api
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_your_paystack_public_key
 GEMINI_API_KEY=your_gemini_api_key_here # Optional
 ```
@@ -127,11 +127,11 @@ GEMINI_API_KEY=your_gemini_api_key_here # Optional
 Create `apps/api/.env`:
 ```env
 APP_ENV=development
-PORT=3001
+PORT=4001
 SUPERADMIN_USERNAME=superadmin
 SUPERADMIN_PASSWORD=your_secure_admin_password
 COOKIE_SECRET=your_cookie_secret_here
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:4000
 PAYSTACK_SECRET_KEY=sk_test_your_paystack_secret_key
 ```
 
@@ -150,12 +150,12 @@ docker compose exec api node dist/seed-catalog.js
 
 | Service | URL | Notes |
 |---|---|---|
-| **Storefront** | [http://localhost:3000](http://localhost:3000) | Public customer web application |
-| **Shop GraphQL API** | [http://localhost:3001/shop-api](http://localhost:3001/shop-api) | Storefront GraphQL endpoint |
-| **Admin GraphQL API** | [http://localhost:3001/admin-api](http://localhost:3001/admin-api) | Operations GraphQL endpoint |
-| **Vendure Admin UI** | [http://localhost:3001/admin](http://localhost:3001/admin) | Login via `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` |
-| **Dev Email Mailbox** | [http://localhost:3001/mailbox](http://localhost:3001/mailbox) | In-memory dev mailbox for testing receipts |
-| **API Health Check** | [http://localhost:3001/health](http://localhost:3001/health) | Returns `{"status":"ok"}` |
+| **Storefront** | [http://localhost:4000](http://localhost:4000) | Public customer web application |
+| **Shop GraphQL API** | [http://localhost:4001/shop-api](http://localhost:4001/shop-api) | Storefront GraphQL endpoint |
+| **Admin GraphQL API** | [http://localhost:4001/admin-api](http://localhost:4001/admin-api) | Operations GraphQL endpoint |
+| **Vendure Admin UI** | [http://localhost:4001/admin](http://localhost:4001/admin) | Login via `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` |
+| **Dev Email Mailbox** | [http://localhost:4001/mailbox](http://localhost:4001/mailbox) | In-memory dev mailbox for testing receipts |
+| **API Health Check** | [http://localhost:4001/health](http://localhost:4001/health) | Returns `{"status":"ok"}` |
 
 ---
 
@@ -174,8 +174,8 @@ pnpm dev
 pnpm --filter @impextech/api seed
 ```
 
-- `apps/web` will run at `http://localhost:3000`
-- `apps/api` will run at `http://localhost:3001` (using local SQLite database)
+- `apps/web` will run at `http://localhost:4000`
+- `apps/api` will run at `http://localhost:4001` (using local SQLite database)
 
 ---
 
@@ -209,15 +209,15 @@ pnpm --filter @impextech/web exec tsc --noEmit
 ### Frontend (`apps/web/.env.local`)
 | Variable | Description | Example |
 |---|---|---|
-| `NEXT_PUBLIC_API_URL` | Public Vendure Shop API endpoint (Browser) | `http://localhost:3001/shop-api` |
-| `INTERNAL_API_URL` | Internal Docker Vendure endpoint (SSR runtime) | `http://api:3001/shop-api` |
+| `NEXT_PUBLIC_API_URL` | Public Vendure Shop API endpoint (Browser) | `http://localhost:4001/shop-api` |
+| `INTERNAL_API_URL` | Internal Docker Vendure endpoint (SSR runtime) | `http://api:4001/shop-api` |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack Public Key | `pk_test_...` or `pk_live_...` |
 | `GEMINI_API_KEY` | *(Optional)* Google Gemini AI key for Sales Chat | `AIzaSy...` |
 
 ### Backend (`apps/api/.env`)
 | Variable | Description | Example |
 |---|---|---|
-| `PORT` | API listen port | `3001` |
+| `PORT` | API listen port | `4001` |
 | `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pass@host:5432/db` |
 | `DB_SYNCHRONIZE` | Auto-sync TypeORM schema on boot | `true` |
 | `COOKIE_SECRET` | Session cookie encryption secret | `your_cookie_secret_here` |

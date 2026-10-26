@@ -18,7 +18,7 @@ const IS_DEV = process.env.APP_ENV === 'dev' || process.env.NODE_ENV !== 'produc
 
 export const config: VendureConfig = {
     apiOptions: {
-        port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3001,
+        port: process.env.PORT ? parseInt(process.env.PORT, 10) : 4001,
         adminApiPath: 'admin-api',
         shopApiPath: 'shop-api',
         adminApiPlayground: IS_DEV,
@@ -27,7 +27,7 @@ export const config: VendureConfig = {
         shopApiDebug: IS_DEV,
         cors: {
             origin: [
-                'http://localhost:3000',
+                'http://localhost:4000',
                 ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
                 ...(process.env.ADDITIONAL_CORS_ORIGINS ? process.env.ADDITIONAL_CORS_ORIGINS.split(',') : []),
             ],
@@ -103,7 +103,7 @@ export const config: VendureConfig = {
         AssetServerPlugin.init({
             route: 'assets',
             assetUploadDir: path.join(__dirname, '../static/assets'),
-            assetUrlPrefix: IS_DEV ? 'http://localhost:3001/assets/' : undefined,
+            assetUrlPrefix: IS_DEV ? `http://localhost:${process.env.PORT || 4001}/assets/` : undefined,
         }),
         DefaultJobQueuePlugin.init({ useDatabaseForBuffer: true }),
         DefaultSchedulerPlugin.init(),
@@ -124,9 +124,9 @@ export const config: VendureConfig = {
                     },
                     globalTemplateVars: {
                         fromAddress: process.env.EMAIL_FROM ?? '"impextech" <orders@impextech.ng>',
-                        verifyEmailAddressUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify`,
-                        passwordResetUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/password-reset`,
-                        changeEmailAddressUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email-address-change`
+                        verifyEmailAddressUrl: `${process.env.FRONTEND_URL || 'http://localhost:4000'}/verify`,
+                        passwordResetUrl: `${process.env.FRONTEND_URL || 'http://localhost:4000'}/password-reset`,
+                        changeEmailAddressUrl: `${process.env.FRONTEND_URL || 'http://localhost:4000'}/verify-email-address-change`
                     },
                 })
             ]
@@ -139,18 +139,18 @@ export const config: VendureConfig = {
                     templatePath: path.join(__dirname, '../static/email/templates'),
                     globalTemplateVars: {
                         fromAddress: '"impextech" <orders@impextech.ng>',
-                        verifyEmailAddressUrl: 'http://localhost:3000/verify',
-                        passwordResetUrl: 'http://localhost:3000/password-reset',
-                        changeEmailAddressUrl: 'http://localhost:3000/verify-email-address-change'
+                        verifyEmailAddressUrl: 'http://localhost:4000/verify',
+                        passwordResetUrl: 'http://localhost:4000/password-reset',
+                        changeEmailAddressUrl: 'http://localhost:4000/verify-email-address-change'
                     },
                 })
             ]
         ),
         AdminUiPlugin.init({
             route: 'admin',
-            port: 3002,
+            port: 4002,
             adminUiConfig: {
-                apiPort: 3001,
+                apiPort: process.env.PORT ? parseInt(process.env.PORT, 10) : 4001,
             },
         }),
         RequestBoardPlugin,

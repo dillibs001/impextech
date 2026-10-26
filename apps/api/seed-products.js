@@ -3,7 +3,7 @@ const http = require('http');
 async function request(path, query, variables = {}, cookie = '') {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify({ query, variables });
-    const req = http.request(`http://127.0.0.1:3001${path}`, {
+    const req = http.request(`http://127.0.0.1:${process.env.PORT || 4001}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

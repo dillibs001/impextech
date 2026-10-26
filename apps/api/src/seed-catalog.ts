@@ -3,7 +3,8 @@ import { bootstrap } from '@vendure/core';
 import { config } from './vendure-config';
 import { CATALOG_PRODUCTS } from './catalog-data';
 
-const ADMIN_API = 'http://localhost:3001/admin-api';
+const ADMIN_PORT = process.env.PORT || '4001';
+const ADMIN_API = process.env.ADMIN_API_URL || `http://localhost:${ADMIN_PORT}/admin-api`;
 
 const AUTH_MUTATION = `
   mutation Authenticate($input: AuthenticationInput!) {
@@ -184,7 +185,7 @@ async function seed() {
   try {
     const running = await isServerRunning();
     if (!running) {
-      console.log('Vendure server not currently active on port 3001. Starting in-process instance...');
+      console.log(`Vendure server not currently active on port ${ADMIN_PORT}. Starting in-process instance...`);
       const app = await bootstrap(config);
       appInstance = app;
       console.log('In-process Vendure instance successfully bootstrapped.');
