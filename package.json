@@ -10,7 +10,7 @@
     "build": "pnpm -r run build",
     "build:api": "pnpm --filter @impextech/api build",
     "build:web": "pnpm --filter @impextech/web build",
-    "test": "apps/api/node_modules/.bin/ts-node apps/api/test/paystack.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/catalog.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/auth.spec.ts",
+    "test": "apps/api/node_modules/.bin/ts-node apps/api/test/paystack.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/catalog.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/auth.spec.ts && apps/api/node_modules/.bin/ts-node apps/web/test/invoice.spec.ts",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down"
   },

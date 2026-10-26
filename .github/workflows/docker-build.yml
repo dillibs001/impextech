@@ -1,0 +1,23 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  docker-build:
+    name: "🐳 Docker Build Verify"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image (no push)
+        run: docker build -f apps/api/Dockerfile -t impextech-api:ci .
+
+      - name: Build Web image (no push)
+        run: docker build -f apps/web/Dockerfile -t impextech-web:ci .

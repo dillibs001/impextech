@@ -9,6 +9,9 @@ import { getVendureProductBySlug } from '@/lib/vendure';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { ProductImageCarousel } from '@/components/product/ProductImageCarousel';
 import { InspectionVideoModal } from '@/components/product/InspectionVideoModal';
+import { CompareToggleButton } from '@/components/product/CompareToggleButton';
+import { WishlistToggleButton } from '@/components/product/WishlistToggleButton';
+import { ProductReviews } from '@/components/reviews/ProductReviews';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -137,8 +140,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         {/* Conversion CTAs */}
                         <div>
                             <div className="flex flex-col gap-3">
-                                {/* Primary Back Market Add to Cart Button */}
-                                <AddToCartButton product={product} variant="full" />
+                                {/* Primary Back Market Add to Cart Button & Wishlist Toggle */}
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <div className="flex-1">
+                                        <AddToCartButton product={product} variant="full" />
+                                    </div>
+                                    <WishlistToggleButton product={product} size="lg" toastPosition="top" />
+                                </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3">
                                     <Link
@@ -157,6 +165,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                                         <WhatsAppIcon className="w-4 h-4 fill-current" /> Order via WhatsApp
                                     </a>
                                 </div>
+
+                                <CompareToggleButton product={product} className="py-3 text-xs sm:text-sm font-bold justify-center" />
                             </div>
 
                             {/* Reassurance notes */}
@@ -177,6 +187,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
                 </div>
             </div>
+
+            {/* Verified Customer Reviews & Ratings Section */}
+            <section className="mt-12 pt-12 border-t border-slate-200/80">
+                <ProductReviews slug={slug} productName={product.name} />
+            </section>
         </div>
     );
 }

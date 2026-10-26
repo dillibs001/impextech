@@ -15,6 +15,8 @@ import {
   addPaymentToOrder,
 } from '@/lib/cart';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
+import { DownloadInvoiceButton } from '@/components/checkout/DownloadInvoiceButton';
+import { InvoiceData } from '@/types/invoice';
 import {
   ShieldCheck,
   CreditCard,
@@ -55,6 +57,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [whatsAppPromptOpen, setWhatsAppPromptOpen] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<CustomerOrder | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
 
   // Auto-populate form if user is logged in
   useEffect(() => {
@@ -124,6 +127,33 @@ export default function CheckoutPage() {
     status: method === 'Paystack' ? 'Paid' : 'Pending Confirmation',
   });
 
+  const buildInvoiceDataObject = (
+    orderRef: string,
+    method: 'whatsapp' | 'paystack'
+  ): InvoiceData => {
+    const primaryItem = items[0]?.product;
+    const itemNames = items.map((ci) => `${ci.product.name} (x${ci.quantity})`).join(', ');
+
+    return {
+      orderRef,
+      customerName: `${form.firstName} ${form.lastName}`.trim() || 'Valued Customer',
+      customerEmail: form.email || 'customer@impextech.ng',
+      customerPhone: form.phone || '+234 906 032 9221',
+      deviceName: items.length === 1
+        ? (primaryItem?.name || 'Canada-Certified Device')
+        : (itemNames || 'Canada-Certified Device'),
+      deviceSlug: primaryItem?.slug || '',
+      condition: primaryItem?.condition || 'Pristine',
+      batteryHealth: primaryItem?.batteryHealth || 90,
+      imeiStatus: primaryItem?.imeiStatus || 'GSMA Clean & Verified',
+      priceNgn: totalPrice,
+      shippingNgn: shipping,
+      totalNgn: grandTotal,
+      paymentMethod: method,
+      purchaseDate: new Date().toISOString(),
+    };
+  };
+
   const buildOrderSummaryText = (orderId: string) => {
     const itemLines = items.map(
       (ci) => `• ${ci.product.name} (x${ci.quantity}) — ${formatPrice(ci.product.priceNgn * ci.quantity)}`
@@ -152,6 +182,7 @@ export default function CheckoutPage() {
     if (!validate()) return;
     const orderId = `IMPEX-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
     const newOrder = createCustomerOrderObject('WhatsApp', orderId);
+    setInvoiceData(buildInvoiceDataObject(orderId, 'whatsapp'));
 
     // Save order record
     saveCustomerOrder(newOrder);
@@ -265,6 +296,7 @@ export default function CheckoutPage() {
             completedOrder.reference = response.reference;
             saveCustomerOrder(completedOrder);
             setLastOrderId(orderCode);
+            setInvoiceData(buildInvoiceDataObject(orderCode, 'paystack'));
             clearCart();
             setOrderPlaced(true);
             setIsProcessing(false);
@@ -288,6 +320,23 @@ export default function CheckoutPage() {
 
   // Order confirmation screen
   if (orderPlaced) {
+    const currentInvoiceData: InvoiceData = invoiceData || {
+      orderRef: lastOrderId || `IMPEX-${Date.now().toString().slice(-6)}`,
+      customerName: `${form.firstName} ${form.lastName}`.trim() || 'Valued Customer',
+      customerEmail: form.email || 'customer@impextech.ng',
+      customerPhone: form.phone || '+234 906 032 9221',
+      deviceName: 'Canada-Certified Gadget',
+      deviceSlug: '',
+      condition: 'Pristine',
+      batteryHealth: 90,
+      imeiStatus: 'GSMA Clean & Verified',
+      priceNgn: totalPrice > 0 ? totalPrice : 0,
+      shippingNgn: 5000,
+      totalNgn: totalPrice > 0 ? totalPrice + 5000 : 5000,
+      paymentMethod: 'whatsapp',
+      purchaseDate: new Date().toISOString(),
+    };
+
     return (
       <div className="bg-slate-50 min-h-screen py-20">
         <div className="container mx-auto px-4 max-w-lg text-center">
@@ -299,9 +348,18 @@ export default function CheckoutPage() {
             <p className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full inline-block mb-4">
               Ref: {lastOrderId}
             </p>
-            <p className="text-slate-600 text-sm mb-8 leading-relaxed">
+            <p className="text-slate-600 text-sm mb-6 leading-relaxed">
               Your Canada device order has been recorded. Our verification and dispatch team will confirm and arrange delivery within 2 hours during WAT business hours.
             </p>
+
+            {/* Branded PDF Invoice & Purchase Certificate Button */}
+            <div className="mb-8 p-5 bg-slate-50 border border-slate-200/80 rounded-2xl text-center">
+              <p className="text-xs text-slate-600 mb-3.5 font-medium">
+                Official proof of purchase & 90-day hardware warranty certificate:
+              </p>
+              <DownloadInvoiceButton invoiceData={currentInvoiceData} />
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/orders"

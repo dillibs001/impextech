@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-typecheck:
+    name: "🔍 Lint & Type Check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check — web
+        run: pnpm --filter @impextech/web exec tsc --noEmit
+
+      - name: TypeScript check — api
+        run: pnpm --filter @impextech/api exec tsc --noEmit
+
+  test:
+    name: "🧪 Automated Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Paystack tests
+        run: pnpm --filter @impextech/api exec ts-node test/paystack.spec.ts
+
+      - name: Run catalog tests
+        run: apps/api/node_modules/.bin/ts-node apps/web/test/catalog.spec.ts
+
+      - name: Run auth tests
+        run: apps/api/node_modules/.bin/ts-node apps/web/test/auth.spec.ts
+
+  build:
+    name: "🏗️ Build Check"
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build API
+        run: pnpm --filter @impextech/api build
+
+      - name: Build Web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4001/shop-api
+          NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: pk_test_ci_stub
+          GEMINI_API_KEY: ci_stub
+        run: pnpm --filter @impextech/web build

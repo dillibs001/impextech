@@ -1,5 +1,8 @@
 # impextech
 
+[![CI](https://github.com/dillibs001/impextech/actions/workflows/ci.yml/badge.svg)](https://github.com/dillibs001/impextech/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/dillibs001/impextech/actions/workflows/docker-build.yml/badge.svg)](https://github.com/dillibs001/impextech/actions/workflows/docker-build.yml)
+
 > **Full-Stack Headless E-Commerce Platform for Verified Pre-Owned Electronics.**  
 > Built with Next.js 16, Vendure v3.7 (NestJS), PostgreSQL, Docker, and Paystack.
 

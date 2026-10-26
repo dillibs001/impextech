@@ -7,6 +7,8 @@ import { BatteryCharging, Star, ShieldCheck, Search, RotateCcw, ArrowRight, Slid
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { CatalogProduct } from '@/lib/catalog';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import { CompareToggleButton } from '@/components/product/CompareToggleButton';
+import { WishlistToggleButton } from '@/components/product/WishlistToggleButton';
 
 export function CategoryProductGrid({ 
     initialProducts, 
@@ -358,17 +360,22 @@ export function CategoryProductGrid({
                                     </div>
 
                                     {/* 1:1 Clean Image Container (Back Market Style) */}
-                                    <Link 
-                                        href={`/products/${item.slug}`} 
-                                        className="aspect-square w-full bg-white flex items-center justify-center p-4 my-2 relative group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                                    >
-                                        <img 
-                                            src={item.preview} 
-                                            alt={item.name} 
-                                            className="h-full w-full object-contain max-h-[190px]"
-                                            loading="lazy"
-                                        />
-                                    </Link>
+                                    <div className="relative my-2">
+                                        <Link 
+                                            href={`/products/${item.slug}`} 
+                                            className="aspect-square w-full bg-white flex items-center justify-center p-4 group-hover:scale-105 transition-transform duration-300 cursor-pointer block"
+                                        >
+                                            <img 
+                                                src={item.preview} 
+                                                alt={item.name} 
+                                                className="h-full w-full object-contain max-h-[190px]"
+                                                loading="lazy"
+                                            />
+                                        </Link>
+                                        <div className="absolute top-1.5 right-1.5 z-10">
+                                            <WishlistToggleButton product={item} size="sm" />
+                                        </div>
+                                    </div>
 
                                     {/* Rating & Category */}
                                     <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
@@ -433,6 +440,11 @@ export function CategoryProductGrid({
                                         >
                                             <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
                                         </a>
+                                    </div>
+
+                                    {/* Compare Toggle */}
+                                    <div className="mt-2 pt-2 border-t border-slate-100">
+                                        <CompareToggleButton product={item} className="w-full" />
                                     </div>
                                 </div>
                             </div>

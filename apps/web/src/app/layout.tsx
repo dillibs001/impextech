@@ -10,7 +10,9 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { AiConsultant } from '@/components/chat/AiConsultant';
 import { WhatsAppButton } from '@/components/chat/WhatsAppButton';
 import { HeaderCartButton } from '@/components/cart/HeaderCartButton';
+import { HeaderWishlistButton } from '@/components/wishlist/HeaderWishlistButton';
 import { HeaderAuthButton } from '@/components/auth/HeaderAuthButton';
+import { CompareBar } from '@/components/compare/CompareBar';
 
 export const metadata: Metadata = {
   title: 'impextech | Canada-Certified Refurbished & Used Gadgets',
@@ -101,6 +103,9 @@ export default function RootLayout({
                   <Package className="w-4 h-4 text-slate-700" />
                   <span>My Orders</span>
                 </Link>
+
+                {/* Wishlist / Saved Devices Button */}
+                <HeaderWishlistButton />
 
                 {/* Customer Account / Sign In */}
                 <HeaderAuthButton />
@@ -250,6 +255,7 @@ export default function RootLayout({
                   <li><Link href="/products" className="hover:text-white transition-colors">Clean Global IMEI Verification</Link></li>
                   <li><Link href="/request" className="hover:text-white transition-colors">Custom Device Sourcing</Link></li>
                   <li><Link href="/account" className="hover:text-white transition-colors">Customer Account / Sign In</Link></li>
+                  <li><Link href="/wishlist" className="hover:text-white transition-colors">Saved Devices (Wishlist)</Link></li>
                   <li><Link href="/orders" className="hover:text-white transition-colors">Track Orders & Shipments</Link></li>
                 </ul>
               </div>
@@ -292,6 +298,7 @@ export default function RootLayout({
 
           <WhatsAppButton />
           <AiConsultant />
+          <CompareBar />
         </Providers>
       </body>
     </html>

@@ -5,6 +5,8 @@ import { ApolloProvider } from '@apollo/client/react';
 import { ReactNode } from 'react';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { WishlistProvider } from '@/context/WishlistContext';
+import { CompareProvider } from '@/context/CompareContext';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const client = new ApolloClient({
@@ -19,8 +21,12 @@ export function Providers({ children }: { children: ReactNode }) {
     <ApolloProvider client={client}>
       <AuthProvider>
         <CartProvider>
-          {children}
-          <CartDrawer />
+          <WishlistProvider>
+            <CompareProvider>
+              {children}
+              <CartDrawer />
+            </CompareProvider>
+          </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </ApolloProvider>
