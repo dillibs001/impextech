@@ -11,6 +11,7 @@ import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { RequestBoardPlugin } from './plugins/request-board/request-board.plugin';
 import { paystackPaymentHandler } from './plugins/paystack/paystack-handler';
 import { PaystackPlugin } from './plugins/paystack/paystack.plugin';
+import { CurrencyInitPlugin } from './plugins/currency-init/currency-init.plugin';
 import path from 'path';
 import 'dotenv/config';
 
@@ -155,5 +156,6 @@ export const config: VendureConfig = {
         }),
         RequestBoardPlugin,
         PaystackPlugin,
+        CurrencyInitPlugin,
     ],
 };

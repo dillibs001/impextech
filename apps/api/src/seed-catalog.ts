@@ -123,6 +123,8 @@ const GET_ACTIVE_CHANNEL = `
   query GetActiveChannel {
     activeChannel {
       id
+      defaultCurrencyCode
+      availableCurrencyCodes
       defaultTaxZone { id name }
       defaultShippingZone { id name }
     }
@@ -134,6 +136,8 @@ const UPDATE_CHANNEL = `
     updateChannel(input: $input) {
       ... on Channel {
         id
+        defaultCurrencyCode
+        availableCurrencyCodes
         defaultTaxZone { id name }
         defaultShippingZone { id name }
       }
@@ -275,13 +279,31 @@ async function seed() {
       console.log('Created Standard Tax Rate');
     }
 
-    // 5. Update Channel Default Zones
-    const chRes = await request<{ activeChannel: { id: string; defaultTaxZone: { id: string } | null } }>(GET_ACTIVE_CHANNEL);
-    if (!chRes.activeChannel.defaultTaxZone) {
+    // 5. Update Channel Default Zones and Currency to NGN
+    const chRes = await request<{
+      activeChannel: {
+        id: string;
+        defaultCurrencyCode: string;
+        availableCurrencyCodes: string[];
+        defaultTaxZone: { id: string } | null;
+      };
+    }>(GET_ACTIVE_CHANNEL);
+
+    if (
+      !chRes.activeChannel.defaultTaxZone ||
+      chRes.activeChannel.defaultCurrencyCode !== 'NGN' ||
+      !chRes.activeChannel.availableCurrencyCodes?.includes('NGN')
+    ) {
       await request(UPDATE_CHANNEL, {
-        input: { id: chRes.activeChannel.id, defaultTaxZoneId: zoneId, defaultShippingZoneId: zoneId }
+        input: {
+          id: chRes.activeChannel.id,
+          defaultCurrencyCode: 'NGN',
+          availableCurrencyCodes: ['NGN'],
+          defaultTaxZoneId: zoneId,
+          defaultShippingZoneId: zoneId,
+        },
       });
-      console.log('Updated Active Channel with Default Zones');
+      console.log('Updated Active Channel with NGN currency and Default Zones');
     }
 
     // 2. Shipping Method
