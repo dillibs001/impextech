@@ -315,7 +315,7 @@ async function seed() {
             code: 'standard-shipping',
             fulfillmentHandler: 'manual-fulfillment',
             translations: [{ languageCode: 'en', name: 'Standard Shipping', description: 'Insured nationwide courier delivery' }],
-            checker: { code: 'default-shipping-eligibility-checker', arguments: [{ name: 'orderTotal', value: '0' }] },
+            checker: { code: 'default-shipping-eligibility-checker', arguments: [{ name: 'orderMinimum', value: '0' }] },
             calculator: {
               code: 'default-shipping-calculator',
               arguments: [
