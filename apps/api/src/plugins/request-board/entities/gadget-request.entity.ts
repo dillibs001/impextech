@@ -28,8 +28,8 @@ export class GadgetRequest extends VendureEntity {
     @Column('int')
     budgetMax!: number;
 
-    @Column('text')
-    additionalNotes!: string;
+    @Column('text', { nullable: true })
+    additionalNotes!: string | null;
 
     @Column({ default: 'pending' })
     status!: string; // pending, sourcing, quoted, accepted, declined
