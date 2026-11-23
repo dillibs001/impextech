@@ -120,37 +120,85 @@ export async function findVariantBySlug(slug: string): Promise<{ id: string; pri
 
 export const findVariantBySku = findVariantBySlug;
 
-// Sync the entire localStorage cart to Vendure at checkout time
-export async function syncCartToVendure(items: Array<{ slug: string; quantity: number }>): Promise<{
-  orderId: string;
-  orderCode: string;
-  totalWithTax: number;
-} | null> {
-  try {
-    for (const item of items) {
-      const variant = await findVariantBySlug(item.slug);
-      if (variant) {
-        const orderData = await addToCart(variant.id, item.quantity);
-        if (orderData?.errorCode) {
-          console.error('Error adding to cart:', orderData.message);
-        }
-      } else {
-        console.warn('Could not find variant for slug:', item.slug);
-      }
+type CheckoutResult<T> = ({ ok: true } & T) | { ok: false; message: string };
+
+// Make the Vendure order contain exactly the browser cart. Safe to call repeatedly:
+// a retry (double click, second attempt after closing the popup) never duplicates lines.
+export async function syncCartToVendure(
+  items: Array<{ slug: string; quantity: number }>
+): Promise<CheckoutResult<{ orderId: string; orderCode: string; totalWithTax: number }>> {
+  const current = await getActiveOrder();
+  if (current?.state === 'ArrangingPayment') {
+    // Going back to AddingItems also releases the stock hold so the cart can be edited.
+    await vendureFetch(
+      `mutation { transitionOrderToState(state: "AddingItems") { ... on Order { id } ... on OrderStateTransitionError { message } } }`
+    );
+  }
+  if (current?.lines?.length) {
+    await vendureFetch(
+      `mutation { removeAllOrderLines { ... on Order { id } ... on ErrorResult { message } } }`
+    );
+  }
+  for (const item of items) {
+    const variant = await findVariantBySlug(item.slug);
+    if (!variant) {
+      return { ok: false, message: `"${item.slug}" is no longer listed. Please remove it from your cart.` };
     }
-    
-    const order = await getActiveOrder();
-    if (order?.id) {
+    const added = await addToCart(variant.id, item.quantity);
+    if (added?.errorCode) {
       return {
-        orderId: order.id,
-        orderCode: order.code,
-        totalWithTax: order.totalWithTax
+        ok: false,
+        message:
+          added.errorCode === 'INSUFFICIENT_STOCK_ERROR'
+            ? 'One of the devices in your cart has just been reserved by another customer.'
+            : added.message,
       };
     }
-  } catch (err) {
-    console.error('Error syncing cart to Vendure:', err);
   }
-  return null;
+  const order = await getActiveOrder();
+  if (!order?.id) {
+    return { ok: false, message: 'Could not create your order. Please try again.' };
+  }
+  return { ok: true, orderId: order.id, orderCode: order.code, totalWithTax: order.totalWithTax };
+}
+
+// Everything up to the payment step, as one server action. On success the order is in
+// ArrangingPayment and the devices are reserved for this customer.
+export async function prepareCheckout(input: {
+  items: Array<{ slug: string; quantity: number }>;
+  customer: { firstName: string; lastName: string; emailAddress: string; phoneNumber: string };
+  address: { fullName: string; streetLine1: string; city: string; province: string; countryCode: string };
+}): Promise<CheckoutResult<{ orderCode: string; totalWithTax: number }>> {
+  const synced = await syncCartToVendure(input.items);
+  if (!synced.ok) return synced;
+
+  const customer = await vendureFetch(
+    `mutation SetCustomer($input: CreateCustomerInput!) {
+      setCustomerForOrder(input: $input) { ... on Order { id } ... on ErrorResult { errorCode message } }
+    }`,
+    { input: input.customer }
+  );
+  const customerResult = customer?.setCustomerForOrder;
+  if (!customerResult?.id && customerResult?.errorCode !== 'ALREADY_LOGGED_IN_ERROR') {
+    return { ok: false, message: customerResult?.message || 'Could not save your contact details.' };
+  }
+  if (!(await setOrderShippingAddress(input.address))) {
+    return { ok: false, message: 'Could not save your delivery address.' };
+  }
+  if (!(await setOrderShippingMethod())) {
+    return { ok: false, message: 'Delivery is not available for this order. Please contact us on WhatsApp.' };
+  }
+  const moved = await transitionOrderToArrangingPayment();
+  if (!moved.ok) {
+    return {
+      ok: false,
+      message: /insufficient stock|no longer available|reserved/i.test(moved.message)
+        ? 'One of the devices in your cart has just been reserved by another customer.'
+        : moved.message,
+    };
+  }
+  const order = await getActiveOrder();
+  return { ok: true, orderCode: order.code, totalWithTax: order.totalWithTax };
 }
 
 // Set customer details on the active order
@@ -220,45 +268,73 @@ export async function setOrderShippingMethod(): Promise<boolean> {
   return !!data?.setOrderShippingMethod?.id;
 }
 
-// Transition order to ArrangingPayment state
-export async function transitionOrderToArrangingPayment(): Promise<boolean> {
+// Transition order to ArrangingPayment state (this is where the stock hold is taken)
+export async function transitionOrderToArrangingPayment(): Promise<{ ok: true } | { ok: false; message: string }> {
   const active = await getActiveOrder();
   if (active?.state === 'ArrangingPayment') {
-    return true;
+    return { ok: true };
   }
-
-  const query = `
-    mutation Transition($state: String!) {
+  const data = await vendureFetch(
+    `mutation Transition($state: String!) {
       transitionOrderToState(state: $state) {
         ... on Order { id state }
         ... on OrderStateTransitionError { errorCode message transitionError }
       }
-    }
-  `;
-  const data = await vendureFetch(query, { state: 'ArrangingPayment' });
-  return data?.transitionOrderToState?.state === 'ArrangingPayment';
+    }`,
+    { state: 'ArrangingPayment' }
+  );
+  const res = data?.transitionOrderToState;
+  if (res?.state === 'ArrangingPayment') return { ok: true };
+  return { ok: false, message: res?.transitionError || res?.message || 'Could not start checkout' };
 }
 
-// Add payment to the order
-export async function addPaymentToOrder(reference: string): Promise<{
-  state: string;
-  code: string;
-} | null> {
-  const query = `
-    mutation AddPayment($input: PaymentInput!) {
-      addPaymentToOrder(input: $input) {
-        ... on Order { id code state }
+// Ask the server to start a Paystack payment. The amount is the Vendure order total,
+// not anything computed in the browser.
+export async function startPaystackPayment(): Promise<
+  CheckoutResult<{ reference: string; accessCode: string; amount: number; orderCode: string }>
+> {
+  const json = await vendureFetchRaw(
+    `mutation { initPaystackTransaction { reference accessCode amount orderCode } }`
+  );
+  const init = json.data?.initPaystackTransaction;
+  if (!init) {
+    return { ok: false, message: json.errors?.[0]?.message || 'Could not start the payment' };
+  }
+  return { ok: true, ...init };
+}
+
+export interface PaymentConfirmation {
+  status: 'settled' | 'pending' | 'processing' | 'declined' | 'needs_review' | 'unknown' | 'initialized';
+  orderCode?: string;
+  orderState?: string;
+  message?: string;
+}
+
+// Ask the server to confirm a reference with Paystack. Idempotent; the webhook does the same.
+export async function confirmPaystackPayment(reference: string): Promise<PaymentConfirmation> {
+  const json = await vendureFetchRaw(
+    `mutation Verify($reference: String!) {
+      verifyPaystackPayment(reference: $reference) { status orderCode orderState message }
+    }`,
+    { reference }
+  );
+  return json.data?.verifyPaystackPayment ?? { status: 'pending', message: json.errors?.[0]?.message };
+}
+
+// WhatsApp concierge: place the order as "pay on delivery". The devices stay reserved
+// and staff settle the payment in the admin once the money is collected.
+export async function placePayOnDeliveryOrder(): Promise<CheckoutResult<{ orderCode: string; state: string }>> {
+  const data = await vendureFetch(
+    `mutation {
+      addPaymentToOrder(input: { method: "cash-on-delivery", metadata: { channel: "whatsapp" } }) {
+        ... on Order { code state }
         ... on ErrorResult { errorCode message }
       }
-    }
-  `;
-  const data = await vendureFetch(query, { 
-    input: { method: 'paystack', metadata: { reference } }
-  });
-  
+    }`
+  );
   const res = data?.addPaymentToOrder;
-  if (res?.id) {
-    return { state: res.state, code: res.code };
+  if (res?.state === 'PaymentAuthorized') {
+    return { ok: true, orderCode: res.code, state: res.state };
   }
-  return null;
+  return { ok: false, message: res?.message || 'Could not place your order' };
 }
