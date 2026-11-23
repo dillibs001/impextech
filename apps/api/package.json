@@ -24,7 +24,7 @@
     "@vendure/core": "^3.0.0",
     "@vendure/email-plugin": "^3.0.0",
     "axios": "^1.20.0",
-    "better-sqlite3": "^11.3.0",
+    "better-sqlite3": "^12.11.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "graphql": "^16.11.0",
@@ -39,4 +39,3 @@
     "typescript": "^5.6.2"
   }
 }
-
