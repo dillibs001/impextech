@@ -4,6 +4,7 @@ import {
     DefaultJobQueuePlugin,
     DefaultSchedulerPlugin,
     ScheduledTask,
+    defaultOrderProcess,
 } from '@vendure/core';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import { AssetServerPlugin } from '@vendure/asset-server-plugin';
@@ -11,6 +12,10 @@ import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { RequestBoardPlugin } from './plugins/request-board/request-board.plugin';
 import { paystackPaymentHandler } from './plugins/paystack/paystack-handler';
 import { PaystackPlugin } from './plugins/paystack/paystack.plugin';
+import {
+    ReserveOnCheckoutStockAllocationStrategy,
+    stockReservationProcess,
+} from './plugins/checkout-safety/stock-reservation';
 import { CurrencyInitPlugin } from './plugins/currency-init/currency-init.plugin';
 import path from 'path';
 import 'dotenv/config';
@@ -63,6 +68,11 @@ export const config: VendureConfig = {
         },
     paymentOptions: {
         paymentMethodHandlers: [paystackPaymentHandler],
+    },
+    orderOptions: {
+        // One-off devices: hold the unit as soon as checkout starts, not after payment.
+        stockAllocationStrategy: new ReserveOnCheckoutStockAllocationStrategy(),
+        process: [defaultOrderProcess, stockReservationProcess],
     },
     customFields: {
         GlobalSettings: [
