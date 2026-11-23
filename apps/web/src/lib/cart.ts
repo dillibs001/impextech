@@ -3,42 +3,53 @@
 import { cookies } from 'next/headers';
 import { getApiUrl } from './api-url';
 
-// Helper to pass cookies to Vendure to maintain the Cart session
-async function vendureFetch(query: string, variables: Record<string, unknown> = {}) {
-    const API_URL = getApiUrl();
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('vendure-auth-token');
-    
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-    };
-    
-    if (sessionCookie) {
-        headers['Cookie'] = `vendure-auth-token=${sessionCookie.value}`;
-    }
+const SESSION_COOKIE = 'vendure-auth-token';
 
-    const res = await fetch(API_URL, {
+// Responses are not code-generated; each caller reads only the fields it queried
+// (this matches the untyped `json.data` the helpers used before).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GqlResponse = { data?: any; errors?: Array<{ message: string }> };
+
+// Calls the Vendure Shop API with the shopper's cart session.
+// Vendure issues the session token in the `vendure-auth-token` *response header* (bearer
+// mode); we keep it in an httpOnly cookie on the storefront domain and send it back as
+// `Authorization: Bearer`. Without this every call would start a new anonymous order.
+async function vendureFetch(query: string, variables: Record<string, unknown> = {}) {
+    const json = await vendureFetchRaw(query, variables);
+    return json.data;
+}
+
+// Returns the full GraphQL response ({ data, errors }) so callers can surface server messages.
+async function vendureFetchRaw(query: string, variables: Record<string, unknown> = {}) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+    const res = await fetch(getApiUrl(), {
         method: 'POST',
-        headers,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ query, variables }),
-        cache: 'no-store' // Cart data should never be cached
+        cache: 'no-store', // Cart data should never be cached
     });
 
-    // Capture the cookie Vendure sends back to maintain the session
-    const setCookieHeader = res.headers.get('set-cookie');
-    if (setCookieHeader && setCookieHeader.includes('vendure-auth-token')) {
-        const tokenMatch = setCookieHeader.match(/vendure-auth-token=([^;]+)/);
-        if (tokenMatch) {
-            try {
-                cookieStore.set('vendure-auth-token', tokenMatch[1], { path: '/', httpOnly: true });
-            } catch {
-                // In Server Components / read operations, Next.js disallows setting cookies; ignore safely
-            }
+    const issued = res.headers.get(SESSION_COOKIE);
+    if (issued && issued !== token) {
+        try {
+            cookieStore.set(SESSION_COOKIE, issued, {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 24 * 30,
+            });
+        } catch {
+            // Server Components cannot set cookies; only Server Actions can. Safe to ignore on reads.
         }
     }
 
-    const json = await res.json();
-    return json.data;
+    return res.json() as Promise<GqlResponse>;
 }
 
 export async function getActiveOrder() {
