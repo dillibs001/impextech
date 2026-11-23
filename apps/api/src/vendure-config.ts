@@ -10,8 +10,9 @@ import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { RequestBoardPlugin } from './plugins/request-board/request-board.plugin';
-import { paystackPaymentHandler } from './plugins/paystack/paystack-handler';
+import { cashOnDeliveryHandler, paystackPaymentHandler } from './plugins/paystack/paystack-handler';
 import { PaystackPlugin } from './plugins/paystack/paystack.plugin';
+import { PaystackService } from './plugins/paystack/paystack.service';
 import {
     ReserveOnCheckoutStockAllocationStrategy,
     stockReservationProcess,
@@ -19,6 +20,10 @@ import {
 import { CurrencyInitPlugin } from './plugins/currency-init/currency-init.plugin';
 import path from 'path';
 import 'dotenv/config';
+
+const CHECKOUT_HOLD_MINUTES = process.env.CHECKOUT_HOLD_MINUTES
+    ? parseInt(process.env.CHECKOUT_HOLD_MINUTES, 10)
+    : 30;
 
 const IS_DEV = process.env.APP_ENV === 'dev' || process.env.NODE_ENV !== 'production';
 
@@ -67,7 +72,7 @@ export const config: VendureConfig = {
             database: path.join(__dirname, '../vendure.sqlite'),
         },
     paymentOptions: {
-        paymentMethodHandlers: [paystackPaymentHandler],
+        paymentMethodHandlers: [paystackPaymentHandler, cashOnDeliveryHandler],
     },
     orderOptions: {
         // One-off devices: hold the unit as soon as checkout starts, not after payment.
@@ -91,6 +96,8 @@ export const config: VendureConfig = {
         ],
     },
     schedulerOptions: {
+        // There is no separate worker process (see index.ts), so run tasks in the server.
+        runTasksInWorkerOnly: false,
         tasks: [
             new ScheduledTask({
                 id: 'cad-fx-rate-sync',
@@ -101,12 +108,18 @@ export const config: VendureConfig = {
                 },
             }),
             new ScheduledTask({
-                id: 'abandoned-order-cleanup',
-                description: 'Daily maintenance: Release uncompleted guest reservations older than 48 hours',
-                schedule: '0 0 * * *',
-                execute: async () => {
-                    console.log('[impextech Scheduler] Daily maintenance: Released expired inventory holds.');
-                },
+                id: 'expired-checkout-sweep',
+                description:
+                    'Every 10 minutes: settle late Paystack payments, then cancel checkouts unpaid for 30 minutes to release their stock',
+                schedule: '*/10 * * * *',
+                execute: async ({ injector }) =>
+                    injector.get(PaystackService).sweepExpiredCheckouts(CHECKOUT_HOLD_MINUTES),
+            }),
+            new ScheduledTask({
+                id: 'paystack-reconciliation',
+                description: 'Daily: compare the last 48h of Paystack payments with our records; repair or flag mismatches',
+                schedule: '30 2 * * *',
+                execute: async ({ injector }) => injector.get(PaystackService).reconcile(48),
             }),
         ],
     },
