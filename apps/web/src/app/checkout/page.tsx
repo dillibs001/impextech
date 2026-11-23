@@ -7,12 +7,11 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { saveCustomerOrder, CustomerOrder } from '@/lib/orders';
 import {
-  syncCartToVendure,
-  setCustomerForOrder,
-  setOrderShippingAddress,
-  setOrderShippingMethod,
-  transitionOrderToArrangingPayment,
-  addPaymentToOrder,
+  prepareCheckout,
+  startPaystackPayment,
+  confirmPaystackPayment,
+  placePayOnDeliveryOrder,
+  PaymentConfirmation,
 } from '@/lib/cart';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { DownloadInvoiceButton } from '@/components/checkout/DownloadInvoiceButton';
@@ -58,6 +57,16 @@ export default function CheckoutPage() {
   const [whatsAppPromptOpen, setWhatsAppPromptOpen] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<CustomerOrder | null>(null);
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [processingLabel, setProcessingLabel] = useState('Reserving your device...');
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
+
+  // Bring checkout errors into view; the banner sits above the payment buttons.
+  useEffect(() => {
+    if (checkoutError) {
+      document.getElementById('checkout-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [checkoutError]);
 
   // Auto-populate form if user is logged in
   useEffect(() => {
@@ -178,49 +187,72 @@ export default function CheckoutPage() {
     ].join('\n');
   };
 
-  const handleWhatsAppOrder = () => {
-    if (!validate()) return;
-    const orderId = `IMPEX-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newOrder = createCustomerOrderObject('WhatsApp', orderId);
-    setInvoiceData(buildInvoiceDataObject(orderId, 'whatsapp'));
+  // Shared first step for both checkout options. The server rebuilds the order from the
+  // cart (idempotently), saves contact + delivery details and reserves the devices.
+  const reserveOrder = () =>
+    prepareCheckout({
+      items: items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity })),
+      customer: {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        emailAddress: form.email,
+        phoneNumber: form.phone,
+      },
+      address: {
+        fullName: `${form.firstName} ${form.lastName}`,
+        streetLine1: form.address,
+        city: form.cityState,
+        province: form.cityState,
+        countryCode: 'NG',
+      },
+    });
 
-    // Save order record
-    saveCustomerOrder(newOrder);
-    setPendingOrder(newOrder);
-    setLastOrderId(orderId);
+  const handleWhatsAppOrder = async () => {
+    if (isProcessing || !validate()) return;
+    setCheckoutError(null);
+    // Open the tab synchronously, while the click still counts as a user gesture;
+    // browsers block window.open after an await.
+    const whatsappTab = window.open('', '_blank');
+    setProcessingLabel('Reserving your device...');
+    setIsProcessing(true);
 
-    // Sync order into Vendure backend so it registers in Admin dashboard
-    syncCartToVendure(items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity })))
-      .then(async (orderRes) => {
-        if (orderRes) {
-          await setCustomerForOrder({
-            firstName: form.firstName,
-            lastName: form.lastName,
-            emailAddress: form.email,
-            phoneNumber: form.phone,
-          });
-          await setOrderShippingAddress({
-            fullName: `${form.firstName} ${form.lastName}`,
-            streetLine1: form.address,
-            city: form.cityState,
-            province: form.cityState,
-            countryCode: 'NG',
-          });
-          await setOrderShippingMethod();
-          await transitionOrderToArrangingPayment();
-        }
-      })
-      .catch((e: unknown) => console.warn('Vendure sync for WhatsApp order:', e));
+    try {
+      const reserved = await reserveOrder();
+      if (!reserved.ok) {
+        whatsappTab?.close();
+        setCheckoutError(reserved.message);
+        return;
+      }
+      const placed = await placePayOnDeliveryOrder();
+      if (!placed.ok) {
+        whatsappTab?.close();
+        setCheckoutError(placed.message);
+        return;
+      }
 
-    // Open WhatsApp
-    const text = buildOrderSummaryText(orderId);
-    window.open(
-      `https://wa.me/2349060329221?text=${encodeURIComponent(text)}`,
-      '_blank'
-    );
+      const orderId = placed.orderCode;
+      const newOrder = createCustomerOrderObject('WhatsApp', orderId);
+      newOrder.total = reserved.totalWithTax / 100;
+      setInvoiceData({ ...buildInvoiceDataObject(orderId, 'whatsapp'), totalNgn: reserved.totalWithTax / 100 });
+      saveCustomerOrder(newOrder);
+      setPendingOrder(newOrder);
+      setLastOrderId(orderId);
 
-    // Show interactive confirmation modal instead of prematurely wiping cart
-    setWhatsAppPromptOpen(true);
+      const url = `https://wa.me/2349060329221?text=${encodeURIComponent(buildOrderSummaryText(orderId))}`;
+      if (whatsappTab) {
+        whatsappTab.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+      // Show confirmation modal instead of prematurely wiping the cart
+      setWhatsAppPromptOpen(true);
+    } catch (err) {
+      whatsappTab?.close();
+      console.error('WhatsApp checkout error:', err);
+      setCheckoutError('Could not place your order. Please check your connection and try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleConfirmWhatsAppSent = () => {
@@ -232,88 +264,100 @@ export default function CheckoutPage() {
     setOrderPlaced(true);
   };
 
-  const handlePaystackOrder = async () => {
-    if (!validate()) return;
-    
-    setIsProcessing(true);
-    
-    try {
-      let orderCode = `IMPEX-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
-      let vendureSynced = false;
+  // Poll the server until the payment is confirmed. The webhook settles the order too,
+  // so this only decides what to show the customer.
+  const waitForConfirmation = async (reference: string): Promise<PaymentConfirmation> => {
+    let last: PaymentConfirmation = { status: 'pending' };
+    for (let attempt = 0; attempt < 8; attempt++) {
+      last = await confirmPaystackPayment(reference).catch(() => ({ status: 'pending' as const }));
+      if (last.status === 'settled' || last.status === 'needs_review' || last.status === 'declined' || last.status === 'unknown') {
+        return last;
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    return last;
+  };
 
-      try {
-        const orderRes = await syncCartToVendure(
-          items.map((ci) => ({ slug: ci.product.slug, quantity: ci.quantity }))
-        );
-        if (orderRes?.orderCode) {
-          orderCode = orderRes.orderCode;
-          vendureSynced = true;
-          await setCustomerForOrder({
-            firstName: form.firstName,
-            lastName: form.lastName,
-            emailAddress: form.email,
-            phoneNumber: form.phone,
-          });
-          await setOrderShippingAddress({
-            fullName: `${form.firstName} ${form.lastName}`,
-            streetLine1: form.address,
-            city: form.cityState,
-            province: form.cityState,
-            countryCode: 'NG',
-          });
-          await setOrderShippingMethod();
-          await transitionOrderToArrangingPayment();
-        }
-      } catch (syncErr) {
-        console.warn('Vendure sync skipped (will record local verified payment):', syncErr);
+  const completePaystackOrder = async (reference: string, orderCode: string, amountKobo: number) => {
+    setProcessingLabel('Confirming your payment with Paystack...');
+    setIsProcessing(true);
+    try {
+      const confirmation = await waitForConfirmation(reference);
+      if (confirmation.status === 'declined' || confirmation.status === 'unknown') {
+        setCheckoutError(confirmation.message || 'Paystack did not confirm this payment. You have not been charged twice; please try again or contact us.');
+        return;
       }
 
-      const paystackKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-      if (!paystackKey || paystackKey.includes('placeholder') || paystackKey === 'pk_test_your_key_here') {
-        alert(
-          `Paystack Public Key not configured yet!\n\nSet NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY in apps/web/.env.local with your Paystack key to activate live payments.\n\nYour order has been recorded (Ref: ${orderCode}). We'll now transfer you to WhatsApp to complete your order.`
+      const order = createCustomerOrderObject('Paystack', orderCode);
+      order.reference = reference;
+      order.total = amountKobo / 100;
+      if (confirmation.status === 'settled') {
+        order.status = 'Paid';
+      } else {
+        order.status = 'Pending Confirmation';
+        setPaymentNotice(
+          confirmation.status === 'needs_review'
+            ? 'We received your payment but need to check one detail on the order. Our team will contact you shortly; you will not be charged again.'
+            : 'Your payment is being confirmed by Paystack. You will receive an email as soon as it is complete; please do not pay again.'
         );
-        handleWhatsAppOrder();
+      }
+      saveCustomerOrder(order);
+      setLastOrderId(orderCode);
+      setInvoiceData({ ...buildInvoiceDataObject(orderCode, 'paystack'), totalNgn: amountKobo / 100 });
+      clearCart();
+      setOrderPlaced(true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaystackOrder = async () => {
+    if (isProcessing || !validate()) return;
+    setCheckoutError(null);
+
+    const paystackKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+    if (!paystackKey || paystackKey.includes('placeholder') || paystackKey === 'pk_test_your_key_here') {
+      setCheckoutError('Online payment is not available right now. Please use the WhatsApp order option.');
+      return;
+    }
+    if (typeof window === 'undefined' || !window.PaystackPop) {
+      setCheckoutError('Paystack could not load. Please check your internet connection or use WhatsApp.');
+      return;
+    }
+
+    setProcessingLabel('Reserving your device...');
+    setIsProcessing(true);
+    try {
+      const reserved = await reserveOrder();
+      if (!reserved.ok) {
+        setCheckoutError(reserved.message);
+        setIsProcessing(false);
+        return;
+      }
+      const payment = await startPaystackPayment();
+      if (!payment.ok) {
+        setCheckoutError(payment.message);
         setIsProcessing(false);
         return;
       }
 
-      const orderRef = `IMPEX-${orderCode}-${Date.now().toString().slice(-4)}`;
-
-      if (typeof window !== 'undefined' && window.PaystackPop) {
-        const paystack = new window.PaystackPop.setup({
-          key: paystackKey,
-          email: form.email,
-          amount: grandTotal * 100, // minor units (kobo)
-          currency: 'NGN',
-          ref: orderRef,
-          callback: async (response: { reference: string }) => {
-            if (vendureSynced) {
-              await addPaymentToOrder(response.reference).catch(e => console.warn('addPaymentToOrder:', e));
-            }
-            const completedOrder = createCustomerOrderObject('Paystack', orderCode);
-            completedOrder.status = 'Paid';
-            completedOrder.reference = response.reference;
-            saveCustomerOrder(completedOrder);
-            setLastOrderId(orderCode);
-            setInvoiceData(buildInvoiceDataObject(orderCode, 'paystack'));
-            clearCart();
-            setOrderPlaced(true);
-            setIsProcessing(false);
-          },
-          onClose: () => {
-            setIsProcessing(false);
-          },
-        });
-
-        paystack.openIframe();
-      } else {
-        throw new Error('Paystack inline SDK failed to load. Please check your internet connection or use WhatsApp.');
-      }
+      setIsProcessing(false);
+      const popup = new window.PaystackPop();
+      popup.resumeTransaction(payment.accessCode, {
+        onSuccess: (transaction) => {
+          void completePaystackOrder(transaction.reference || payment.reference, payment.orderCode, payment.amount);
+        },
+        onCancel: () => {
+          // The device stays reserved for a short while, then the sweep releases it.
+          setCheckoutError('Payment was cancelled. Your device is held for 30 minutes if you want to try again.');
+        },
+        onError: (error) => {
+          setCheckoutError(error?.message || 'Paystack could not start the payment. Please try again.');
+        },
+      });
     } catch (err: unknown) {
       console.error('Checkout error:', err);
-      const message = err instanceof Error ? err.message : 'An error occurred during checkout. Please try again.';
-      alert(message);
+      setCheckoutError('An error occurred during checkout. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -344,13 +388,20 @@ export default function CheckoutPage() {
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 mb-2">Order Confirmed!</h1>
+            <h1 className="text-2xl font-black text-slate-900 mb-2">
+              {paymentNotice ? 'Order Received' : 'Order Confirmed!'}
+            </h1>
             <p className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full inline-block mb-4">
               Ref: {lastOrderId}
             </p>
             <p className="text-slate-600 text-sm mb-6 leading-relaxed">
               Your Canada device order has been recorded. Our verification and dispatch team will confirm and arrange delivery within 2 hours during WAT business hours.
             </p>
+            {paymentNotice && (
+              <p role="status" className="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium p-3 mb-6 leading-relaxed">
+                {paymentNotice}
+              </p>
+            )}
 
             {/* Branded PDF Invoice & Purchase Certificate Button */}
             <div className="mb-8 p-5 bg-slate-50 border border-slate-200/80 rounded-2xl text-center">
@@ -461,7 +512,7 @@ export default function CheckoutPage() {
           <div className="bg-white p-6 rounded-2xl flex items-center gap-4 shadow-xl">
             <div className="w-6 h-6 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
             <span className="text-sm font-bold text-slate-800">
-              Synchronizing Order with Vendure...
+              {processingLabel}
             </span>
           </div>
         </div>
@@ -600,6 +651,12 @@ export default function CheckoutPage() {
                 </h2>
 
                 <div className="flex flex-col gap-4">
+                  {checkoutError && (
+                    <div id="checkout-error" role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{checkoutError}</span>
+                    </div>
+                  )}
                   {/* Option A: WhatsApp Direct Order */}
                   <div className="border-2 border-emerald-500/40 rounded-2xl p-5 bg-emerald-50/20">
                     <div className="flex items-center justify-between mb-2">
@@ -618,6 +675,7 @@ export default function CheckoutPage() {
                     </p>
                     <button
                       onClick={handleWhatsAppOrder}
+                      disabled={isProcessing}
                       className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-3.5 px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer text-xs sm:text-sm"
                     >
                       <WhatsAppIcon className="w-4 h-4 fill-current" />
@@ -644,6 +702,7 @@ export default function CheckoutPage() {
                     </p>
                     <button
                       onClick={handlePaystackOrder}
+                      disabled={isProcessing}
                       className="w-full bg-[#2B2E35] hover:bg-[#1E2127] text-white font-bold py-3.5 px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer text-xs sm:text-sm"
                     >
                       <CreditCard className="w-4 h-4" />

@@ -3,42 +3,53 @@
 import { cookies } from 'next/headers';
 import { getApiUrl } from './api-url';
 
-// Helper to pass cookies to Vendure to maintain the Cart session
-async function vendureFetch(query: string, variables: Record<string, unknown> = {}) {
-    const API_URL = getApiUrl();
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('vendure-auth-token');
-    
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-    };
-    
-    if (sessionCookie) {
-        headers['Cookie'] = `vendure-auth-token=${sessionCookie.value}`;
-    }
+const SESSION_COOKIE = 'vendure-auth-token';
 
-    const res = await fetch(API_URL, {
+// Responses are not code-generated; each caller reads only the fields it queried
+// (this matches the untyped `json.data` the helpers used before).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GqlResponse = { data?: any; errors?: Array<{ message: string }> };
+
+// Calls the Vendure Shop API with the shopper's cart session.
+// Vendure issues the session token in the `vendure-auth-token` *response header* (bearer
+// mode); we keep it in an httpOnly cookie on the storefront domain and send it back as
+// `Authorization: Bearer`. Without this every call would start a new anonymous order.
+async function vendureFetch(query: string, variables: Record<string, unknown> = {}) {
+    const json = await vendureFetchRaw(query, variables);
+    return json.data;
+}
+
+// Returns the full GraphQL response ({ data, errors }) so callers can surface server messages.
+async function vendureFetchRaw(query: string, variables: Record<string, unknown> = {}) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+    const res = await fetch(getApiUrl(), {
         method: 'POST',
-        headers,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ query, variables }),
-        cache: 'no-store' // Cart data should never be cached
+        cache: 'no-store', // Cart data should never be cached
     });
 
-    // Capture the cookie Vendure sends back to maintain the session
-    const setCookieHeader = res.headers.get('set-cookie');
-    if (setCookieHeader && setCookieHeader.includes('vendure-auth-token')) {
-        const tokenMatch = setCookieHeader.match(/vendure-auth-token=([^;]+)/);
-        if (tokenMatch) {
-            try {
-                cookieStore.set('vendure-auth-token', tokenMatch[1], { path: '/', httpOnly: true });
-            } catch {
-                // In Server Components / read operations, Next.js disallows setting cookies; ignore safely
-            }
+    const issued = res.headers.get(SESSION_COOKIE);
+    if (issued && issued !== token) {
+        try {
+            cookieStore.set(SESSION_COOKIE, issued, {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 24 * 30,
+            });
+        } catch {
+            // Server Components cannot set cookies; only Server Actions can. Safe to ignore on reads.
         }
     }
 
-    const json = await res.json();
-    return json.data;
+    return res.json() as Promise<GqlResponse>;
 }
 
 export async function getActiveOrder() {
@@ -109,37 +120,85 @@ export async function findVariantBySlug(slug: string): Promise<{ id: string; pri
 
 export const findVariantBySku = findVariantBySlug;
 
-// Sync the entire localStorage cart to Vendure at checkout time
-export async function syncCartToVendure(items: Array<{ slug: string; quantity: number }>): Promise<{
-  orderId: string;
-  orderCode: string;
-  totalWithTax: number;
-} | null> {
-  try {
-    for (const item of items) {
-      const variant = await findVariantBySlug(item.slug);
-      if (variant) {
-        const orderData = await addToCart(variant.id, item.quantity);
-        if (orderData?.errorCode) {
-          console.error('Error adding to cart:', orderData.message);
-        }
-      } else {
-        console.warn('Could not find variant for slug:', item.slug);
-      }
+type CheckoutResult<T> = ({ ok: true } & T) | { ok: false; message: string };
+
+// Make the Vendure order contain exactly the browser cart. Safe to call repeatedly:
+// a retry (double click, second attempt after closing the popup) never duplicates lines.
+export async function syncCartToVendure(
+  items: Array<{ slug: string; quantity: number }>
+): Promise<CheckoutResult<{ orderId: string; orderCode: string; totalWithTax: number }>> {
+  const current = await getActiveOrder();
+  if (current?.state === 'ArrangingPayment') {
+    // Going back to AddingItems also releases the stock hold so the cart can be edited.
+    await vendureFetch(
+      `mutation { transitionOrderToState(state: "AddingItems") { ... on Order { id } ... on OrderStateTransitionError { message } } }`
+    );
+  }
+  if (current?.lines?.length) {
+    await vendureFetch(
+      `mutation { removeAllOrderLines { ... on Order { id } ... on ErrorResult { message } } }`
+    );
+  }
+  for (const item of items) {
+    const variant = await findVariantBySlug(item.slug);
+    if (!variant) {
+      return { ok: false, message: `"${item.slug}" is no longer listed. Please remove it from your cart.` };
     }
-    
-    const order = await getActiveOrder();
-    if (order?.id) {
+    const added = await addToCart(variant.id, item.quantity);
+    if (added?.errorCode) {
       return {
-        orderId: order.id,
-        orderCode: order.code,
-        totalWithTax: order.totalWithTax
+        ok: false,
+        message:
+          added.errorCode === 'INSUFFICIENT_STOCK_ERROR'
+            ? 'One of the devices in your cart has just been reserved by another customer.'
+            : added.message,
       };
     }
-  } catch (err) {
-    console.error('Error syncing cart to Vendure:', err);
   }
-  return null;
+  const order = await getActiveOrder();
+  if (!order?.id) {
+    return { ok: false, message: 'Could not create your order. Please try again.' };
+  }
+  return { ok: true, orderId: order.id, orderCode: order.code, totalWithTax: order.totalWithTax };
+}
+
+// Everything up to the payment step, as one server action. On success the order is in
+// ArrangingPayment and the devices are reserved for this customer.
+export async function prepareCheckout(input: {
+  items: Array<{ slug: string; quantity: number }>;
+  customer: { firstName: string; lastName: string; emailAddress: string; phoneNumber: string };
+  address: { fullName: string; streetLine1: string; city: string; province: string; countryCode: string };
+}): Promise<CheckoutResult<{ orderCode: string; totalWithTax: number }>> {
+  const synced = await syncCartToVendure(input.items);
+  if (!synced.ok) return synced;
+
+  const customer = await vendureFetch(
+    `mutation SetCustomer($input: CreateCustomerInput!) {
+      setCustomerForOrder(input: $input) { ... on Order { id } ... on ErrorResult { errorCode message } }
+    }`,
+    { input: input.customer }
+  );
+  const customerResult = customer?.setCustomerForOrder;
+  if (!customerResult?.id && customerResult?.errorCode !== 'ALREADY_LOGGED_IN_ERROR') {
+    return { ok: false, message: customerResult?.message || 'Could not save your contact details.' };
+  }
+  if (!(await setOrderShippingAddress(input.address))) {
+    return { ok: false, message: 'Could not save your delivery address.' };
+  }
+  if (!(await setOrderShippingMethod())) {
+    return { ok: false, message: 'Delivery is not available for this order. Please contact us on WhatsApp.' };
+  }
+  const moved = await transitionOrderToArrangingPayment();
+  if (!moved.ok) {
+    return {
+      ok: false,
+      message: /insufficient stock|no longer available|reserved/i.test(moved.message)
+        ? 'One of the devices in your cart has just been reserved by another customer.'
+        : moved.message,
+    };
+  }
+  const order = await getActiveOrder();
+  return { ok: true, orderCode: order.code, totalWithTax: order.totalWithTax };
 }
 
 // Set customer details on the active order
@@ -209,45 +268,73 @@ export async function setOrderShippingMethod(): Promise<boolean> {
   return !!data?.setOrderShippingMethod?.id;
 }
 
-// Transition order to ArrangingPayment state
-export async function transitionOrderToArrangingPayment(): Promise<boolean> {
+// Transition order to ArrangingPayment state (this is where the stock hold is taken)
+export async function transitionOrderToArrangingPayment(): Promise<{ ok: true } | { ok: false; message: string }> {
   const active = await getActiveOrder();
   if (active?.state === 'ArrangingPayment') {
-    return true;
+    return { ok: true };
   }
-
-  const query = `
-    mutation Transition($state: String!) {
+  const data = await vendureFetch(
+    `mutation Transition($state: String!) {
       transitionOrderToState(state: $state) {
         ... on Order { id state }
         ... on OrderStateTransitionError { errorCode message transitionError }
       }
-    }
-  `;
-  const data = await vendureFetch(query, { state: 'ArrangingPayment' });
-  return data?.transitionOrderToState?.state === 'ArrangingPayment';
+    }`,
+    { state: 'ArrangingPayment' }
+  );
+  const res = data?.transitionOrderToState;
+  if (res?.state === 'ArrangingPayment') return { ok: true };
+  return { ok: false, message: res?.transitionError || res?.message || 'Could not start checkout' };
 }
 
-// Add payment to the order
-export async function addPaymentToOrder(reference: string): Promise<{
-  state: string;
-  code: string;
-} | null> {
-  const query = `
-    mutation AddPayment($input: PaymentInput!) {
-      addPaymentToOrder(input: $input) {
-        ... on Order { id code state }
+// Ask the server to start a Paystack payment. The amount is the Vendure order total,
+// not anything computed in the browser.
+export async function startPaystackPayment(): Promise<
+  CheckoutResult<{ reference: string; accessCode: string; amount: number; orderCode: string }>
+> {
+  const json = await vendureFetchRaw(
+    `mutation { initPaystackTransaction { reference accessCode amount orderCode } }`
+  );
+  const init = json.data?.initPaystackTransaction;
+  if (!init) {
+    return { ok: false, message: json.errors?.[0]?.message || 'Could not start the payment' };
+  }
+  return { ok: true, ...init };
+}
+
+export interface PaymentConfirmation {
+  status: 'settled' | 'pending' | 'processing' | 'declined' | 'needs_review' | 'unknown' | 'initialized';
+  orderCode?: string;
+  orderState?: string;
+  message?: string;
+}
+
+// Ask the server to confirm a reference with Paystack. Idempotent; the webhook does the same.
+export async function confirmPaystackPayment(reference: string): Promise<PaymentConfirmation> {
+  const json = await vendureFetchRaw(
+    `mutation Verify($reference: String!) {
+      verifyPaystackPayment(reference: $reference) { status orderCode orderState message }
+    }`,
+    { reference }
+  );
+  return json.data?.verifyPaystackPayment ?? { status: 'pending', message: json.errors?.[0]?.message };
+}
+
+// WhatsApp concierge: place the order as "pay on delivery". The devices stay reserved
+// and staff settle the payment in the admin once the money is collected.
+export async function placePayOnDeliveryOrder(): Promise<CheckoutResult<{ orderCode: string; state: string }>> {
+  const data = await vendureFetch(
+    `mutation {
+      addPaymentToOrder(input: { method: "cash-on-delivery", metadata: { channel: "whatsapp" } }) {
+        ... on Order { code state }
         ... on ErrorResult { errorCode message }
       }
-    }
-  `;
-  const data = await vendureFetch(query, { 
-    input: { method: 'paystack', metadata: { reference } }
-  });
-  
+    }`
+  );
   const res = data?.addPaymentToOrder;
-  if (res?.id) {
-    return { state: res.state, code: res.code };
+  if (res?.state === 'PaymentAuthorized') {
+    return { ok: true, orderCode: res.code, state: res.state };
   }
-  return null;
+  return { ok: false, message: res?.message || 'Could not place your order' };
 }
